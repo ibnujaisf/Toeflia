@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String        @id @default(uuid())
+  name      String
+  reason    String
+  sessions  TestSession[]
+  createdAt DateTime      @default(now())
+}
+
+model TestSession {
+  id             String           @id @default(uuid())
+  userId         String
+  user           User             @relation(fields: [userId], references: [id])
+  moduleId       String
+  moduleTitle    String
+  score          Int
+  totalQuestions Int
+  aiSummary      String?          @db.Text
+  tips           String[]
+  isReviewed     Boolean          @default(false)
+  questions      QuestionResult[]
+  createdAt      DateTime         @default(now())
+}
+
+model QuestionResult {
+  id             String      @id @default(uuid())
+  sessionId      String
+  session        TestSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  questionNumber Int
+  type           String?     @db.Text
+  passage        String?     @db.Text
+  transcript     String?     @db.Text
+  questionText   String      @db.Text
+  options        String      @db.Text
+  userAnswer     Int
+  correctAnswer  Int
+  isCorrect      Boolean
+  aiExplanation  String?     @db.Text
+}

@@ -4,6 +4,33 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import PreTestModal from "@/components/features/PreTestModal";
 
+const formatRelativeDate = (dateStr: string) => {
+  const date = new Date(dateStr);
+  const today = new Date();
+  
+  const d1 = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const d2 = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  
+  const diffTime = d1.getTime() - d2.getTime();
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+  const timeStr = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+
+  if (diffDays === 0) {
+    return `Today, ${timeStr}`;
+  } else if (diffDays === 1) {
+    return `Yesterday, ${timeStr}`;
+  } else {
+    return date.toLocaleDateString(undefined, {
+      weekday: 'long',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+};
+
 export default function ReviewDetailPage({ params }: { params: Promise<{ reviewId: string }> }) {
   const router = useRouter();
   const { reviewId } = use(params);
@@ -12,6 +39,9 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ reviewI
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<{ role: 'ai' | 'user', text: string }[]>([]);
   const [isChatLoading, setIsChatLoading] = useState(false);
+  
+  // TTS State for Review
+  const [playingId, setPlayingId] = useState<string | null>(null);
 
   // Retake Modal State
   const [isRetakeModalOpen, setIsRetakeModalOpen] = useState(false);
@@ -38,6 +68,31 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ reviewI
     };
     fetchSession();
   }, [reviewId]);
+
+  // TTS Cleanup
+  useEffect(() => {
+    return () => window.speechSynthesis.cancel();
+  }, []);
+
+  const handleReplayAudio = (questionId: string, transcript: string, questionText: string) => {
+    window.speechSynthesis.cancel(); 
+
+    if (playingId === questionId) {
+      setPlayingId(null);
+      return; // Toggle stop
+    }
+
+    setPlayingId(questionId);
+    const textToRead = `${transcript || ''}... Question... ${questionText || ''}`;
+    const utterance = new SpeechSynthesisUtterance(textToRead);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.9;
+
+    utterance.onend = () => setPlayingId(null);
+    utterance.onerror = () => setPlayingId(null);
+
+    window.speechSynthesis.speak(utterance);
+  };
 
   const handleSendChat = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,7 +164,7 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ reviewI
                 {sessionData.moduleTitle}
               </span>
               <span className="text-[10px] uppercase tracking-widest font-inter text-zinc-500">
-                {new Date(sessionData.createdAt).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                {formatRelativeDate(sessionData.createdAt)}
               </span>
             </div>
           </div>
@@ -136,15 +191,34 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ reviewI
                     <span className="font-urbanist font-bold text-sm text-zinc-900 dark:text-zinc-50">
                       Q{idx + 1}
                     </span>
+                    
+                    {/* Replay Button (Hanya untuk tipe Listening) */}
+                    {q.type?.includes('listening') && (
+                      <button
+                        onClick={() => handleReplayAudio(q.id, q.transcript || '', q.questionText || '')}
+                        className={`p-1.5 rounded-full transition-colors flex items-center gap-1.5 text-xs font-urbanist font-bold uppercase tracking-widest ${
+                          playingId === q.id 
+                            ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900" 
+                            : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+                        }`}
+                      >
+                        {playingId === q.id ? (
+                          <><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2" /></svg> Stop</>
+                        ) : (
+                          <><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3" /></svg> Replay</>
+                        )}
+                      </button>
+                    )}
+
                     {isCorrect ? (
-                      <div className="px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 text-[10px] font-urbanist font-bold tracking-widest uppercase flex items-center gap-1.5">
+                      <div className="px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-500/30 text-[10px] font-urbanist font-bold tracking-widest uppercase flex items-center gap-1.5">
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
                         Correct
                       </div>
                     ) : (
-                      <div className="px-2 py-0.5 rounded-full border border-zinc-900 dark:border-zinc-50 text-zinc-900 dark:text-zinc-50 text-[10px] font-urbanist font-bold tracking-widest uppercase flex items-center gap-1.5">
+                      <div className="px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/30 text-[10px] font-urbanist font-bold tracking-widest uppercase flex items-center gap-1.5">
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M18 6L6 18M6 6l12 12" />
                         </svg>
@@ -182,24 +256,22 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ reviewI
                       let icon = null;
 
                       if (isCorrectChoice) {
-                        optionStyle = "bg-zinc-900 dark:bg-white border-zinc-900 dark:border-white text-white dark:text-zinc-900 font-medium";
+                        optionStyle = "bg-green-50 dark:bg-green-500/10 border-green-300 dark:border-green-500/40 text-green-800 dark:text-green-300 font-medium";
                         icon = (
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} className="text-white dark:text-zinc-900">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} className="text-green-600 dark:text-green-400">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
                         );
                       } else if (isUserChoice && !isCorrect) {
-                        optionStyle = "bg-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-600 text-zinc-800 dark:text-zinc-300 line-through opacity-90";
+                        optionStyle = "bg-red-50 dark:bg-red-500/10 border-red-300 dark:border-red-500/40 text-red-800 dark:text-red-300 line-through opacity-90";
                         icon = (
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} className="text-zinc-500">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} className="text-red-600 dark:text-red-400">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M18 6L6 18M6 6l12 12" />
                           </svg>
                         );
                       }
 
-                      // Special format for Written Expression
-                      const isWrittenExp = q.type === 'written_expression';
-                      const label = isWrittenExp ? `(${String.fromCharCode(65 + i)}) ` : "";
+                      const label = `${String.fromCharCode(65 + i)}. `;
 
                       return (
                         <div key={i} className={`flex items-center justify-between py-2 px-3 rounded-xl transition-all font-inter text-sm ${optionStyle}`}>

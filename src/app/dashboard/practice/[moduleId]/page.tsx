@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/context/UserContext";
 
 interface TestPageProps {
   params: Promise<{ moduleId: string }>;
@@ -10,6 +11,7 @@ interface TestPageProps {
 
 export default function FocusModeTestPage({ params, searchParams }: TestPageProps) {
   const router = useRouter();
+  const { user } = useUser();
   
   // Unwrap the Promises
   const { moduleId } = use(params);
@@ -29,12 +31,36 @@ export default function FocusModeTestPage({ params, searchParams }: TestPageProp
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   
-  // Timer State
   const [timeLeft, setTimeLeft] = useState(initialTime);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  // --- TTS STATE ---
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [hasPlayed, setHasPlayed] = useState(false);
+  const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  // --- 1. LOGIKA PENGELOMPOKAN SOAL (GROUPING) ---
+  const displayGroups = useMemo(() => {
+    if (questions.length === 0) return [];
+    
+    if (moduleId === "listening") {
+      // TOEFL ITP Specific: Group questions 7-8 and 9-10
+      return [[0], [1], [2], [3], [4], [5], [6, 7], [8, 9]];
+    }
+    
+    // Default: 1 question per page
+    return questions.map((_, i) => [i]);
+  }, [questions, moduleId]);
+
+  // --- 1. GEMBOK DOUBLE FETCH ---
+  const hasFetched = useRef(false);
+
   // Fetch AI Generated Questions
   useEffect(() => {
+    // Cegah eksekusi ganda di Strict Mode
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+
     const fetchQuestions = async () => {
       try {
         const response = await fetch("/api/generate-questions", {
@@ -54,12 +80,80 @@ export default function FocusModeTestPage({ params, searchParams }: TestPageProp
         setIsLoading(false);
       }
     };
-    fetchQuestions();
+
+    if (moduleId) {
+      fetchQuestions();
+    }
   }, [moduleId]);
+
+  // TTS Cleanup
+  useEffect(() => {
+    return () => {
+      window.speechSynthesis.cancel();
+    };
+  }, []);
+
+  // Stop audio and reset played status when changing question group
+  useEffect(() => {
+    window.speechSynthesis.cancel();
+    setIsPlaying(false);
+    setHasPlayed(false);
+  }, [currentIndex]);
+
+  const handlePlayAudio = async () => {
+    if (currentGroup.length === 0 || hasPlayed) return;
+    
+    window.speechSynthesis.cancel();
+    setIsPlaying(true);
+    setHasPlayed(true); // Lock play button
+
+    const speak = (text: string, rate = 0.9) => {
+      return new Promise<void>((resolve) => {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = rate;
+        utterance.onend = () => resolve();
+        utterance.onerror = () => resolve();
+        window.speechSynthesis.speak(utterance);
+      });
+    };
+
+    const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+    try {
+      // 1. Read Main Transcript
+      const firstQ = questions[currentGroup[0]];
+      if (firstQ?.transcript) {
+        await speak(firstQ.transcript);
+        await sleep(2000); // 2s pause after story
+      }
+
+      // 2. Read Questions sequentially with thinking pause
+      for (let i = 0; i < currentGroup.length; i++) {
+        const qIdx = currentGroup[i];
+        const q = questions[qIdx];
+        
+        await speak(`Question ${qIdx + 1}`);
+        await sleep(500);
+        
+        if (q.text) {
+          await speak(q.text);
+        }
+        
+        // 6s pause for user to think/answer (except for last question in group)
+        if (i < currentGroup.length - 1) {
+          await sleep(6000); 
+        }
+      }
+    } finally {
+      setIsPlaying(false);
+    }
+  };
 
   // Timer countdown logic
   useEffect(() => {
-    if (!isTimerEnabled || isSubmitted) return;
+    // Tahan timer jika masih loading, soal kosong, atau timer tidak diaktifkan
+    if (isLoading || questions.length === 0 || !isTimerEnabled || isSubmitted) return;
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -72,7 +166,7 @@ export default function FocusModeTestPage({ params, searchParams }: TestPageProp
     }, 1000);
     
     return () => clearInterval(timer);
-  }, [isTimerEnabled, isSubmitted]);
+  }, [isLoading, questions, isTimerEnabled, isSubmitted]);
 
   // Submit Confirmation State
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
@@ -103,7 +197,7 @@ export default function FocusModeTestPage({ params, searchParams }: TestPageProp
     });
 
     const payload = {
-      userId: "user-123", // Dummy ID (API will override this)
+      userId: user?.id || "user-123",
       moduleId: moduleId,
       moduleTitle: getModuleTitle(),
       score: score,
@@ -147,12 +241,12 @@ export default function FocusModeTestPage({ params, searchParams }: TestPageProp
     return `${m}:${s}`;
   };
 
-  const handleOptionSelect = (optionIndex: number) => {
-    setAnswers((prev) => ({ ...prev, [currentIndex]: optionIndex }));
+  const handleOptionSelect = (qIndex: number, optionIndex: number) => {
+    setAnswers((prev) => ({ ...prev, [qIndex]: optionIndex }));
   };
 
   const handleNext = () => {
-    if (currentIndex < questions.length - 1) {
+    if (currentIndex < displayGroups.length - 1) {
       setCurrentIndex((prev) => prev + 1);
     }
   };
@@ -175,7 +269,8 @@ export default function FocusModeTestPage({ params, searchParams }: TestPageProp
     setIsSubmitModalOpen(true);
   };
 
-  const currentQ = questions[currentIndex] || {};
+  const currentGroup = displayGroups[currentIndex] || [];
+  const currentQ = questions[currentGroup[0]] || {};
   
   // Map module ID to full name for header
   const getModuleTitle = () => {
@@ -218,48 +313,81 @@ export default function FocusModeTestPage({ params, searchParams }: TestPageProp
 
   // Conditionally render the question area based on the moduleId
   const renderQuestionArea = () => {
-    // Reusable Question Content Component
-    const questionContent = (
-      <div className="flex flex-col gap-6 animate-fade-in">
-        <h2 className="font-urbanist font-bold text-2xl text-zinc-900 dark:text-zinc-50 leading-snug">
-          {currentIndex + 1}. {currentQ.text}
-        </h2>
-        <div className="flex flex-col gap-3">
-          {currentQ.options?.map((opt: string, i: number) => {
-            const isSelected = answers[currentIndex] === i;
-            return (
-              <button
-                key={i}
-                onClick={() => handleOptionSelect(i)}
-                className={`text-left p-5 rounded-2xl border transition-all duration-200 font-inter text-sm md:text-base ${
-                  isSelected
-                    ? "bg-zinc-900 border-zinc-900 text-white dark:bg-white dark:border-white dark:text-zinc-900"
-                    : "bg-white dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-500"
-                }`}
-              >
-                {opt}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    );
 
-    // 1. Listening Module
+    // 1. Listening Module (Minimalist & Immersive)
     if (moduleId === "listening") {
       return (
-        <div className="max-w-2xl mx-auto w-full flex flex-col gap-8">
-          {/* Audio Player / Transcript */}
-          <div className="w-full bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <span className="font-urbanist font-bold text-zinc-900 dark:text-zinc-50">Audio Transcript</span>
-              <span className="text-xs font-inter px-2 py-1 bg-zinc-200 dark:bg-zinc-800 rounded text-zinc-600 dark:text-zinc-400">TTS Ready</span>
+        <div className="max-w-2xl mx-auto w-full flex flex-col gap-10 animate-fade-in">
+          {/* Compact Audio Control Bar */}
+          <div className="w-full bg-zinc-900 dark:bg-zinc-100 rounded-2xl p-4 md:p-5 flex items-center justify-between shadow-lg text-white dark:text-zinc-950 mb-2 animate-fade-in border border-white/10 dark:border-zinc-200">
+            <div className="flex items-center gap-4">
+              <div className="flex flex-col">
+                <h3 className="font-urbanist font-bold text-base md:text-lg leading-tight">Audio Track</h3>
+                <p className="font-inter text-xs md:text-sm opacity-70">
+                  {hasPlayed ? "Audio finished." : "Listen carefully. Audio plays only once."}
+                </p>
+              </div>
             </div>
-            <div className="text-sm font-inter text-zinc-700 dark:text-zinc-300 italic p-4 bg-white dark:bg-zinc-950 rounded-xl border border-zinc-100 dark:border-zinc-800">
-              {currentQ.transcript || "No transcript provided for this question."}
-            </div>
+            
+            <button 
+              onClick={handlePlayAudio}
+              disabled={isPlaying || hasPlayed}
+              className={`shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-all shadow-md ${
+                hasPlayed 
+                  ? "bg-zinc-700 text-zinc-500 dark:bg-zinc-300 dark:text-zinc-500 cursor-not-allowed" 
+                  : isPlaying 
+                    ? "bg-white/20 dark:bg-black/10 animate-pulse cursor-not-allowed" 
+                    : "bg-white text-zinc-900 dark:bg-zinc-950 dark:text-white hover:scale-105 active:scale-95"
+              }`}
+            >
+              {isPlaying ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
+              ) : hasPlayed ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+              ) : (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="ml-1"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+              )}
+            </button>
           </div>
-          {questionContent}
+
+          {/* Grouped Questions */}
+          <div className="flex flex-col gap-12">
+            {currentGroup.map((qIndex: number) => {
+              const q = questions[qIndex];
+              return (
+                <div key={qIndex} className="flex flex-col gap-6">
+                  <div className="flex items-center gap-3">
+                    <span className="flex items-center justify-center w-10 h-10 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-urbanist font-black text-sm shadow-lg">
+                      {qIndex + 1}
+                    </span>
+                    <div className="h-px flex-1 bg-zinc-100 dark:bg-zinc-800"></div>
+                  </div>
+                  
+                  <div className="flex flex-col gap-3">
+                    {q.options?.map((opt: string, i: number) => {
+                      const isSelected = answers[qIndex] === i;
+                      const label = `${String.fromCharCode(65 + i)}. `; 
+                      
+                      return (
+                        <button
+                          key={i}
+                          onClick={() => handleOptionSelect(qIndex, i)}
+                          className={`text-left p-5 rounded-2xl border transition-all duration-200 font-inter text-sm md:text-base ${
+                            isSelected
+                              ? "bg-zinc-900 border-zinc-900 text-white dark:bg-white dark:border-white dark:text-zinc-900"
+                              : "bg-white dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-500 shadow-sm"
+                          }`}
+                        >
+                          <span className="font-black mr-2">{label}</span>
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       );
     }
@@ -280,7 +408,32 @@ export default function FocusModeTestPage({ params, searchParams }: TestPageProp
           
           {/* Question Column */}
           <div className="flex flex-col">
-            {questionContent}
+            <div className="flex flex-col gap-6 animate-fade-in">
+              <h2 className="font-urbanist font-bold text-2xl text-zinc-900 dark:text-zinc-50 leading-snug">
+                {currentGroup[0] + 1}. {currentQ.text}
+              </h2>
+              <div className="flex flex-col gap-3">
+                {currentQ.options?.map((opt: string, i: number) => {
+                  const isSelected = answers[currentGroup[0]] === i;
+                  const label = `${String.fromCharCode(65 + i)}. `; 
+                  
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => handleOptionSelect(currentGroup[0], i)}
+                      className={`text-left p-5 rounded-2xl border transition-all duration-200 font-inter text-sm md:text-base ${
+                        isSelected
+                          ? "bg-zinc-900 border-zinc-900 text-white dark:bg-white dark:border-white dark:text-zinc-900"
+                          : "bg-white dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-500"
+                      }`}
+                    >
+                      <span className="font-bold mr-2">{label}</span>
+                      {opt}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       );
@@ -289,7 +442,32 @@ export default function FocusModeTestPage({ params, searchParams }: TestPageProp
     // 3. Structure Module (Default Single Column)
     return (
       <div className="max-w-2xl mx-auto w-full">
-        {questionContent}
+        <div className="flex flex-col gap-6 animate-fade-in">
+          <h2 className="font-urbanist font-bold text-2xl text-zinc-900 dark:text-zinc-50 leading-snug">
+            {currentGroup[0] + 1}. {currentQ.text}
+          </h2>
+          <div className="flex flex-col gap-3">
+            {currentQ.options?.map((opt: string, i: number) => {
+              const isSelected = answers[currentGroup[0]] === i;
+              const label = `${String.fromCharCode(65 + i)}. `; 
+              
+              return (
+                <button
+                  key={i}
+                  onClick={() => handleOptionSelect(currentGroup[0], i)}
+                  className={`text-left p-5 rounded-2xl border transition-all duration-200 font-inter text-sm md:text-base ${
+                    isSelected
+                      ? "bg-zinc-900 border-zinc-900 text-white dark:bg-white dark:border-white dark:text-zinc-900"
+                      : "bg-white dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-500"
+                  }`}
+                >
+                  <span className="font-bold mr-2">{label}</span>
+                  {opt}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
     );
   };
@@ -373,7 +551,11 @@ export default function FocusModeTestPage({ params, searchParams }: TestPageProp
         {/* Right: Question Indicator */}
         <div className="flex-1 flex justify-end">
           <div className="text-sm font-inter text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-900/50 px-4 py-2 rounded-full border border-zinc-200 dark:border-zinc-800">
-            <span className="font-bold text-zinc-900 dark:text-zinc-50">Question {currentIndex + 1}</span> of {questions.length}
+            {moduleId === "listening" ? (
+              <span className="font-bold text-zinc-900 dark:text-zinc-50">Page {currentIndex + 1}</span>
+            ) : (
+              <span className="font-bold text-zinc-900 dark:text-zinc-50">Question {currentIndex + 1}</span>
+            )} of {displayGroups.length}
           </div>
         </div>
 
@@ -394,7 +576,7 @@ export default function FocusModeTestPage({ params, searchParams }: TestPageProp
           Previous
         </button>
         
-        {currentIndex === questions.length - 1 ? (
+        {currentIndex === displayGroups.length - 1 ? (
           <button
             onClick={checkTestCompleteness}
             className="px-8 py-3 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 font-urbanist font-bold text-sm hover:bg-zinc-800 dark:hover:bg-zinc-100 active:scale-[0.98] transition-all shadow-xl dark:shadow-black/20"

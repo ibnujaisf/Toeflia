@@ -61,32 +61,34 @@ export default function LogoutModal({ open, onClose }: LogoutModalProps) {
 
       {/* Panel */}
       <div className="relative w-full max-w-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 shadow-2xl animate-fade-in-up">
-        {/* Icon */}
-        <div className="w-11 h-11 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center mb-5">
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.8}
-            className="text-zinc-500 dark:text-zinc-300"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"
-            />
-          </svg>
-        </div>
+        <div className="flex items-center gap-4 mb-5">
+          {/* Icon */}
+          <div className="w-11 h-11 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center shrink-0">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.8}
+              className="text-zinc-500 dark:text-zinc-300"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"
+              />
+            </svg>
+          </div>
 
-        {/* Title */}
-        <h2
-          id="logout-modal-title"
-          className="font-urbanist font-extrabold text-xl text-zinc-900 dark:text-zinc-50 mb-2"
-        >
-          Leaving so soon?
-        </h2>
+          {/* Title */}
+          <h2
+            id="logout-modal-title"
+            className="font-urbanist font-extrabold text-xl text-zinc-900 dark:text-zinc-50"
+          >
+            Leaving so soon?
+          </h2>
+        </div>
 
         {/* Description */}
         <p className="text-sm text-zinc-500 dark:text-zinc-400 font-inter leading-relaxed mb-7">
@@ -109,7 +111,7 @@ export default function LogoutModal({ open, onClose }: LogoutModalProps) {
           <button
             id="logout-wipe-exit"
             onClick={handleWipeExit}
-            className="w-full py-3 px-6 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 font-urbanist font-bold text-sm hover:bg-zinc-700 dark:hover:bg-zinc-100 active:scale-[0.98] transition-all duration-150"
+            className="w-full py-3 px-6 rounded-full bg-red-600 text-white font-urbanist font-bold text-sm hover:bg-red-700 active:scale-[0.98] transition-all duration-150"
           >
             Wipe Data &amp; Exit
           </button>

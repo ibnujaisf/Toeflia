@@ -13,9 +13,9 @@ export async function POST(request: Request) {
     }
 
     // 1. Evaluate with AI
-    let aiEvaluation = { aiSummary: "Test completed.", explanations: [] as any[] };
+    let aiEvaluation: { aiSummary: string; explanations: any[]; tips?: string[] } = { aiSummary: "Test completed.", explanations: [] as any[] };
     try {
-      aiEvaluation = await aiService.evaluateTest(moduleTitle, score, totalQuestions, questions);
+      aiEvaluation = await aiService.evaluateTest(moduleId, score, totalQuestions, questions);
     } catch (error) {
       console.error("AI Evaluation failed, using fallback.", error);
     }
@@ -28,21 +28,21 @@ export async function POST(request: Request) {
       });
     }
 
-    // 3. Create a Guest User if dummy ID used (Temporary Auth Workaround)
-    let newDummyUser = { id: userId };
-    if (userId === "user-123") {
-      newDummyUser = await prisma.user.create({
-        data: {
-          name: "Guest Student",
-          reason: "Trying the simulation"
-        }
-      });
-    }
+    // 3. Ensure User exists in database
+    const dbUser = await prisma.user.upsert({
+      where: { id: userId },
+      update: {},
+      create: {
+        id: userId,
+        name: "Guest Student",
+        reason: "Trying the simulation"
+      }
+    });
 
     // 4. Save to Database via Prisma
     const session = await prisma.testSession.create({
       data: {
-        userId: newDummyUser.id,
+        userId: dbUser.id,
         moduleId,
         moduleTitle,
         score,

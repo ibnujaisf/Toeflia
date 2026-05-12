@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -34,23 +36,30 @@ export default function DashboardPage() {
 
   // Fetch Dashboard Stats
   useEffect(() => {
-    if (mounted && user?.id) {
-      const fetchStats = async () => {
-        try {
-          const res = await fetch(`/api/dashboard?userId=${user.id}`);
-          const data = await res.json();
-          if (data.success) {
-            setStats(data.data);
+    if (mounted) {
+      // Jika user punya ID, lakukan fetch
+      if (user?.id) {
+        const fetchStats = async () => {
+          try {
+            const res = await fetch(`/api/dashboard?userId=${user.id}`);
+            const data = await res.json();
+            if (data.success) {
+              setStats(data.data);
+            }
+          } catch (error) {
+            console.error("Failed to load dashboard stats:", error);
+          } finally {
+            setIsLoadingStats(false);
           }
-        } catch (error) {
-          console.error("Failed to load dashboard stats:", error);
-        } finally {
-          setIsLoadingStats(false);
-        }
-      };
-      fetchStats();
+        };
+        fetchStats();
+      } else {
+        // Jika tidak ada user ID (karena shadow user), langsung matikan loading 
+        // agar menampilkan empty state, bukan skeleton selamanya.
+        setIsLoadingStats(false);
+      }
     }
-  }, [mounted, user?.id]);
+  }, [mounted, user]);
 
   /* Redirect to home if not onboarded (client-side guard) */
   useEffect(() => {

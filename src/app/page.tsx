@@ -6,6 +6,7 @@ import Navbar from "@/components/features/Navbar";
 import OnboardingModal from "@/components/features/OnboardingModal";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import { UserProvider } from "@/context/UserContext";
+import Logo from "@/components/ui/Logo";
 
 /* ─────────────────────────── HERO ──────────────────────────────────────── */
 function Hero({ onStart }: { onStart: () => void }) {
@@ -414,17 +415,7 @@ function Footer({ onStart }: { onStart: () => void }) {
         {/* Bottom row */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-5 pt-8 border-t border-zinc-100 dark:border-zinc-800/60">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-zinc-950 dark:bg-white rounded-md flex items-center justify-center shrink-0">
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                <path
-                  d="M2 4h12M2 8h8M2 12h5"
-                  stroke="currentColor"
-                  className="text-white dark:text-zinc-950"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </div>
+            <Logo className="w-6 h-6 shrink-0" />
             <span className="font-urbanist font-bold text-sm text-zinc-950 dark:text-zinc-50">
               Toeflia
             </span>

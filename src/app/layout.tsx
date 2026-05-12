@@ -18,6 +18,9 @@ export const metadata: Metadata = {
     description: "Next-gen TOEFL micro-learning simulator, 100% AI-powered.",
     type: "website",
   },
+  icons: {
+    icon: "/Toeflia.png",
+  },
 };
 
 export default function RootLayout({

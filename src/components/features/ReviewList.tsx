@@ -10,6 +10,34 @@ const MODULE_SECTIONS = [
   { id: "reading", title: "Reading Comprehension" }
 ];
 
+const formatRelativeDate = (dateStr: string) => {
+  const date = new Date(dateStr);
+  const today = new Date();
+  
+  // Strip time for accurate day comparison
+  const d1 = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const d2 = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  
+  const diffTime = d1.getTime() - d2.getTime();
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+  const timeStr = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+
+  if (diffDays === 0) {
+    return `Today, ${timeStr}`;
+  } else if (diffDays === 1) {
+    return `Yesterday, ${timeStr}`;
+  } else {
+    return date.toLocaleDateString(undefined, {
+      weekday: 'long',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+};
+
 export default function ReviewList({ initialSessions }: { initialSessions: any[] }) {
   const router = useRouter();
   const [sessions, setSessions] = useState(initialSessions);
@@ -102,7 +130,7 @@ export default function ReviewList({ initialSessions }: { initialSessions: any[]
                             </div>
                             
                             <span className="text-xs font-inter text-zinc-500 dark:text-zinc-400">
-                              {new Date(session.createdAt).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                              {formatRelativeDate(session.createdAt)}
                             </span>
                           </div>
                           
@@ -152,25 +180,27 @@ export default function ReviewList({ initialSessions }: { initialSessions: any[]
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-zinc-950/40 dark:bg-zinc-950/80 backdrop-blur-sm" onClick={() => setIsDeleteModalOpen(false)} />
           <div className="relative w-full max-w-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 shadow-2xl animate-scale-in">
-            <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-500 flex items-center justify-center mb-4">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 6h18" />
-                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-              </svg>
+            <div className="flex items-center gap-4 mb-5">
+              <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-500 flex items-center justify-center shrink-0">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 6h18" />
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                </svg>
+              </div>
+              <h2 className="font-urbanist font-extrabold text-xl text-zinc-900 dark:text-zinc-50">
+                Delete Test History?
+              </h2>
             </div>
-            <h2 className="font-urbanist font-extrabold text-xl text-zinc-900 dark:text-zinc-50 mb-2">
-              Hapus Riwayat Tes?
-            </h2>
             <p className="text-sm font-inter text-zinc-600 dark:text-zinc-400 mb-6 leading-relaxed">
-              Tindakan ini permanen dan data tidak dapat dikembalikan. Semua insight AI untuk sesi ini juga akan dihapus.
+              This action is permanent and cannot be undone. All AI insights for this session will also be deleted.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setIsDeleteModalOpen(false)}
                 className="flex-1 px-4 py-2.5 rounded-full border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-urbanist font-bold text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
               >
-                Batal
+                Cancel
               </button>
               <button
                 onClick={confirmDelete}
@@ -180,10 +210,10 @@ export default function ReviewList({ initialSessions }: { initialSessions: any[]
                 {isDeleting ? (
                   <>
                     <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                    Menghapus...
+                    Deleting...
                   </>
                 ) : (
-                  "Ya, Hapus"
+                  "Yes, Delete"
                 )}
               </button>
             </div>

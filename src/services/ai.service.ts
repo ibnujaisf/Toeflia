@@ -1,14 +1,13 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { TOEFLIA_SYSTEM_PROMPT, TOEFLIA_GENERATOR_PROMPT } from "@/lib/prompts";
+import * as Prompts from "@/lib/prompts";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export const aiService = {
-  async evaluateTest(moduleTitle: string, score: number, totalQuestions: number, questions: any[]) {
+  async evaluateTest(moduleId: string, score: number, totalQuestions: number, questions: any[]) {
     const wrongQuestions = questions.filter((q: any) => !q.isCorrect);
     
     let promptContent = "Here are the test results for the user:\n\n";
-    promptContent += `Module: ${moduleTitle}\n`;
     promptContent += `Score: ${score} out of ${totalQuestions}\n\n`;
     
     if (wrongQuestions.length > 0) {
@@ -23,11 +22,16 @@ export const aiService = {
       promptContent += "The user answered ALL questions correctly. Perfect score!\n";
     }
 
-    promptContent += `\nPlease provide the evaluation based on the system instructions. Return the output STRICTLY as a JSON object matching this structure: { "aiSummary": "...", "tips": ["...", "..."], "explanations": [{ "questionNumber": 1, "explanation": "..." }] }. Do not include any markdown backticks like \`\`\`json.\n`;
+    promptContent += `\nPlease provide the evaluation based on the system instructions. Return the output STRICTLY as a JSON object matching the required structure. Do not include any markdown backticks like \`\`\`json.\n`;
+
+    // Select the appropriate evaluator prompt
+    let systemPrompt = Prompts.EVAL_STRUCTURE_PROMPT;
+    if (moduleId === "listening") systemPrompt = Prompts.EVAL_LISTENING_PROMPT;
+    if (moduleId === "reading") systemPrompt = Prompts.EVAL_READING_PROMPT;
 
     const model = genAI.getGenerativeModel({
       model: "gemini-flash-latest",
-      systemInstruction: TOEFLIA_SYSTEM_PROMPT,
+      systemInstruction: systemPrompt,
       generationConfig: {
         responseMimeType: "application/json",
       }
@@ -42,9 +46,14 @@ export const aiService = {
   async generateQuestions(module: string) {
     const promptContent = `Tolong buatkan 10 soal untuk modul: "${module}". Ikuti aturan komposisi untuk modul ini secara ketat. Return HANYA JSON array.`;
     
+    // Select the appropriate generator prompt
+    let systemPrompt = Prompts.GENERATE_STRUCTURE_PROMPT;
+    if (module === "listening") systemPrompt = Prompts.GENERATE_LISTENING_PROMPT;
+    if (module === "reading") systemPrompt = Prompts.GENERATE_READING_PROMPT;
+
     const model = genAI.getGenerativeModel({
       model: "gemini-flash-latest",
-      systemInstruction: TOEFLIA_GENERATOR_PROMPT,
+      systemInstruction: systemPrompt,
       generationConfig: {
         responseMimeType: "application/json",
       }

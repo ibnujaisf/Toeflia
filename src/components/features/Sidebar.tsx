@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import LogoutModal from "@/components/ui/LogoutModal";
+import Logo from "@/components/ui/Logo";
 
 /* ── Nav items ──────────────────────────────────────────────────────────── */
 const NAV_ITEMS = [
@@ -49,16 +50,10 @@ export default function Sidebar() {
         {/* Logo */}
         <div className="px-6 py-5 border-b border-zinc-200 dark:border-zinc-800">
           <Link href="/" id="sidebar-logo" className="flex items-center gap-2.5">
-            <div className="w-7 h-7 bg-zinc-900 dark:bg-white rounded-lg flex items-center justify-center shrink-0">
-              {/* Light mode: dark bg → white strokes; Dark mode: white bg → black strokes */}
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                <path d="M2 4h12M2 8h8M2 12h5" stroke="white" strokeWidth="2" strokeLinecap="round" className="dark:hidden" />
-                <path d="M2 4h12M2 8h8M2 12h5" stroke="black" strokeWidth="2" strokeLinecap="round" className="hidden dark:block" />
-              </svg>
-            </div>
-            <span className="font-urbanist font-extrabold text-sm text-zinc-900 dark:text-zinc-50">
+            <Logo className="w-10 h-10 shrink-0" />
+            <h2 className="font-urbanist font-extrabold text-xl text-zinc-900 dark:text-zinc-50">
               Toeflia
-            </span>
+            </h2>
           </Link>
         </div>
 

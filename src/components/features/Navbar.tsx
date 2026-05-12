@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Logo from "@/components/ui/Logo";
 
 interface NavbarProps {
   onStartLearning?: () => void;
@@ -42,20 +43,10 @@ export default function Navbar({ onStartLearning }: NavbarProps) {
             id="nav-logo"
             className="flex items-center gap-2.5 group"
           >
-            <div className="w-7 h-7 bg-zinc-950 dark:bg-white rounded-lg flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                <path
-                  d="M2 4h12M2 8h8M2 12h5"
-                  stroke="currentColor"
-                  className="text-white dark:text-black"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </div>
-            <span className="font-urbanist font-extrabold text-base text-zinc-950 dark:text-zinc-50 tracking-tight">
+            <Logo className="w-12 h-12 transition-transform group-hover:scale-105" />
+            <h2 className="font-urbanist font-extrabold text-xl text-zinc-950 dark:text-zinc-50 tracking-tight">
               Toeflia
-            </span>
+            </h2>
           </Link>
 
           {/* Links */}

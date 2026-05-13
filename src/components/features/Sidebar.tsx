@@ -28,6 +28,12 @@ const NAV_ITEMS = [
     href: "/dashboard/review",
     icon: <IconSparkles />,
   },
+  {
+    id: "nav-insights",
+    label: "Insights",
+    href: "/dashboard/insights",
+    icon: <IconLightbulb />,
+  },
 ] as const;
 
 /* ── Status label map ───────────────────────────────────────────────────── */
@@ -160,6 +166,14 @@ function IconSparkles() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+    </svg>
+  );
+}
+
+function IconLightbulb() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5M12 10V9m-8 9h16a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2z" />
     </svg>
   );
 }

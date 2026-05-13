@@ -19,6 +19,8 @@ export default function FocusModeTestPage({ params, searchParams }: TestPageProp
   
   // Read timer toggle from URL (default to true if not explicitly false)
   const isTimerEnabled = search?.timer !== "false";
+  const isRetake = search?.retake === "true";
+  const aiSummary = (search?.summary as string) || ""; // Tangkap summary dari URL
 
   // Determine initial time based on section
   const initialTime = moduleId === "listening" ? 7 * 60 : moduleId === "structure" ? 6 * 60 + 15 : moduleId === "reading" ? 11 * 60 : 7 * 60;
@@ -66,7 +68,11 @@ export default function FocusModeTestPage({ params, searchParams }: TestPageProp
         const response = await fetch("/api/generate-questions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ module: moduleId })
+          body: JSON.stringify({ 
+            module: moduleId,
+            isRetake: isRetake,     // <-- Kirim status retake
+            aiSummary: aiSummary    // <-- Kirim summary
+          })
         });
         const data = await response.json();
         if (data.success) {
@@ -172,6 +178,7 @@ export default function FocusModeTestPage({ params, searchParams }: TestPageProp
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   const [unansweredQuestions, setUnansweredQuestions] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isTimeUp, setIsTimeUp] = useState(false);
 
   const performFinalSubmit = async () => {
     setIsSubmitting(true);
@@ -230,6 +237,7 @@ export default function FocusModeTestPage({ params, searchParams }: TestPageProp
   // Auto-submit when timer reaches 0
   useEffect(() => {
     if (isTimerEnabled && timeLeft === 0 && !isSubmitted && !isSubmitting) {
+      setIsTimeUp(true);
       performFinalSubmit();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -641,6 +649,47 @@ export default function FocusModeTestPage({ params, searchParams }: TestPageProp
                   unansweredQuestions.length === 0 ? "Finish Test" : "Submit Anyway"
                 )}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* 5. BLOCKING OVERLAY (TIME'S UP / SUBMITTING) */}
+      {(isSubmitting || isTimeUp) && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
+          {/* Darker Backdrop */}
+          <div className="absolute inset-0 bg-zinc-950/60 dark:bg-zinc-950/90 backdrop-blur-xl" />
+          
+          <div className="relative w-full max-w-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[32px] p-10 shadow-2xl flex flex-col items-center text-center animate-scale-in">
+            {/* Animated Icon */}
+            <div className="w-20 h-20 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-8 relative">
+              <div className="absolute inset-0 rounded-full border-4 border-zinc-200 dark:border-zinc-700 border-t-zinc-900 dark:border-t-zinc-100 animate-spin" />
+              {isTimeUp ? (
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="text-zinc-900 dark:text-zinc-50">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+              ) : (
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="text-zinc-900 dark:text-zinc-50">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+              )}
+            </div>
+
+            <h2 className="font-urbanist font-extrabold text-2xl text-zinc-900 dark:text-zinc-50 mb-3">
+              {isTimeUp ? "Time's Up!" : "Finalizing Test"}
+            </h2>
+            <p className="text-zinc-600 dark:text-zinc-400 font-inter text-sm leading-relaxed max-w-[240px]">
+              {isTimeUp 
+                ? "Your time has expired. AI is currently analyzing your answers..." 
+                : "Please wait while our AI tutor evaluates your performance..."}
+            </p>
+
+            <div className="mt-8 flex items-center gap-2 px-4 py-2 bg-zinc-50 dark:bg-zinc-950 rounded-full border border-zinc-100 dark:border-zinc-800">
+              <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce"></span>
+              <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></span>
+              <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></span>
+              <span className="text-[10px] font-urbanist font-bold uppercase tracking-widest text-zinc-500 ml-1">Analyzing</span>
             </div>
           </div>
         </div>

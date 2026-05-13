@@ -10,31 +10,65 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "UserId is required" }, { status: 400 });
     }
 
-    // 1. Fetch all sessions for this user
-    const sessions = await prisma.testSession.findMany({
+    // 1. Ambil SEMUA sesi user (Urutkan dari yang terbaru)
+    // Ini penting agar kita bisa menghitung urutan attempt yang benar
+    const allSessions = await prisma.testSession.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' }
     });
 
-    // 2. Calculations
+    // 2. Siapkan penampung stats
     let totalScore = 0;
     let totalQuestions = 0;
-
     const moduleStats: Record<string, { score: number, total: number }> = {
       listening: { score: 0, total: 0 },
       structure: { score: 0, total: 0 },
       reading: { score: 0, total: 0 }
     };
 
-    sessions.forEach((session: any) => {
+    // Tracker untuk menghitung total attempt per modul secara keseluruhan
+    const moduleTotalCounts: Record<string, number> = {
+      listening: 0,
+      structure: 0,
+      reading: 0
+    };
+
+    // 3. Proses SEMUA sesi untuk menghitung statistik global dan total per modul
+    allSessions.forEach((session: any) => {
       totalScore += session.score;
       totalQuestions += session.totalQuestions;
 
       if (moduleStats[session.moduleId]) {
         moduleStats[session.moduleId].score += session.score;
         moduleStats[session.moduleId].total += session.totalQuestions;
+        moduleTotalCounts[session.moduleId]++; // Hitung berapa kali modul ini dikerjakan
       }
     });
+
+    // 4. Hitung Attempt Number secara akurat per modul
+    // Kita buat copy tracker untuk menghitung mundur
+    const attemptTracker = { ...moduleTotalCounts };
+
+    const processedSessions = allSessions.map((s: any) => {
+      const currentAttempt = attemptTracker[s.moduleId];
+      // Kurangi tracker agar sesi yang lebih lama (di urutan bawah) mendapat nomor lebih kecil
+      if (attemptTracker[s.moduleId] !== undefined) {
+        attemptTracker[s.moduleId]--;
+      }
+      
+      return {
+        id: s.id,
+        module: s.moduleTitle,
+        score: `${s.score}/${s.totalQuestions}`,
+        date: s.createdAt,
+        attemptNumber: currentAttempt || 1 ,
+        aiSummary: s.aiSummary,
+        tips: s.tips
+      };
+    });
+
+    // 5. Ambil hanya 5 terbaru untuk Recent Activity
+    const recentActivity = processedSessions.slice(0, 5);
 
     const overallAccuracy = totalQuestions > 0 ? Math.round((totalScore / totalQuestions) * 100) : 0;
 
@@ -58,13 +92,6 @@ export async function GET(request: Request) {
         accuracy: `${moduleStats.reading.total > 0 ? Math.round((moduleStats.reading.score / moduleStats.reading.total) * 100) : 0}%`
       }
     ];
-
-    const recentActivity = sessions.slice(0, 5).map((s: any) => ({
-      id: s.id,
-      module: s.moduleTitle,
-      score: `${s.score}/${s.totalQuestions}`,
-      date: s.createdAt,
-    }));
 
     return NextResponse.json({
       success: true,

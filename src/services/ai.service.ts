@@ -43,13 +43,19 @@ export const aiService = {
     return JSON.parse(cleanJson);
   },
 
-  async generateQuestions(module: string) {
+  async generateQuestions(module: string, isRetake: boolean = false, aiSummary: string = "") {
     const promptContent = `Tolong buatkan 10 soal untuk modul: "${module}". Ikuti aturan komposisi untuk modul ini secara ketat. Return HANYA JSON array.`;
     
     // Select the appropriate generator prompt
-    let systemPrompt = Prompts.GENERATE_STRUCTURE_PROMPT;
-    if (module === "listening") systemPrompt = Prompts.GENERATE_LISTENING_PROMPT;
-    if (module === "reading") systemPrompt = Prompts.GENERATE_READING_PROMPT;
+    let systemPrompt = "";
+
+    if (module === "listening") {
+      systemPrompt = isRetake ? Prompts.GENERATE_RETAKE_LISTENING(aiSummary) : Prompts.GENERATE_LISTENING_PROMPT;
+    } else if (module === "reading") {
+      systemPrompt = isRetake ? Prompts.GENERATE_RETAKE_READING(aiSummary) : Prompts.GENERATE_READING_PROMPT;
+    } else {
+      systemPrompt = isRetake ? Prompts.GENERATE_RETAKE_STRUCTURE(aiSummary) : Prompts.GENERATE_STRUCTURE_PROMPT;
+    }
 
     const model = genAI.getGenerativeModel({
       model: "gemini-flash-latest",
@@ -74,7 +80,7 @@ export const aiService = {
   },
 
   async chatWithTutor(message: string, contextData: string) {
-    const systemPrompt = `Anda adalah Toeflia Tutor. Anda membantu user memahami kesalahan mereka pada tes TOEFL. Gunakan konteks data tes berikut untuk menjawab: ${contextData}. Berikan penjelasan yang mendukung, ramah, dan edukatif. Jika user bertanya tentang spesifik nomor pertanyaan, rujuk kembali pada konteks. Usahakan ringkas.`;
+    const systemPrompt = Prompts.CHAT_TUTOR_PROMPT(contextData);
     
     const model = genAI.getGenerativeModel({
       model: "gemini-flash-latest",

@@ -16,8 +16,18 @@ export async function POST(request: Request) {
     let aiEvaluation: { aiSummary: string; explanations: any[]; tips?: string[] } = { aiSummary: "Test completed.", explanations: [] as any[] };
     try {
       aiEvaluation = await aiService.evaluateTest(moduleId, score, totalQuestions, questions);
-    } catch (error) {
-      console.error("AI Evaluation failed, using fallback.", error);
+    } catch (error: any) {
+      console.error("🚨 AI EVALUATION ERROR DETAILS:", error);
+      
+      // Fallback Production yang bersih (jika server Google down)
+      aiEvaluation = {
+        aiSummary: "AI evaluator kami sedang mengalami lonjakan antrean sementara. Namun, skor dan jawaban Anda telah berhasil disimpan.",
+        tips: [
+          "Fokus pada pertanyaan yang terlewat atau salah.",
+          "Coba gunakan fitur Targeted Retake untuk melatih kelemahan spesifik Anda."
+        ],
+        explanations: []
+      };
     }
 
     // 2. Map AI explanations for quick access

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
+import ReactMarkdown from "react-markdown";
 import PreTestModal from "@/components/features/PreTestModal";
 
 const formatRelativeDate = (dateStr: string) => {
@@ -159,11 +160,21 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ reviewI
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <div className="flex flex-col">
-              <span className="font-urbanist font-bold text-sm text-zinc-900 dark:text-zinc-50 leading-tight">
-                {sessionData.moduleTitle}
-              </span>
-              <span className="text-[10px] uppercase tracking-widest font-inter text-zinc-500">
+           <div className="flex flex-col">
+              <div className="flex items-center gap-2">
+                <span className="font-urbanist font-bold text-sm text-zinc-900 dark:text-zinc-50 leading-tight">
+                  {sessionData.moduleTitle}
+                </span>
+                
+                {/* Badge Attempt Baru */}
+                {sessionData.globalAttempt && (
+                  <span className="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-300">
+                    Attempt {sessionData.globalAttempt}
+                  </span>
+                )}
+              </div>
+              
+              <span className="text-[10px] uppercase tracking-widest font-inter text-zinc-500 mt-0.5">
                 {formatRelativeDate(sessionData.createdAt)}
               </span>
             </div>
@@ -180,6 +191,7 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ reviewI
         <main className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-zinc-50/50 dark:bg-zinc-950/30">
           <div className="max-w-2xl mx-auto flex flex-col gap-4 pb-12">
             {sessionData.questions.map((q: any, idx: number) => {
+              const isUnanswered = q.userAnswer === -1;
               const isCorrect = q.userAnswer === q.correctAnswer;
               const parsedOptions = typeof q.options === 'string' ? JSON.parse(q.options) : q.options;
               
@@ -216,6 +228,13 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ reviewI
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
                         Correct
+                      </div>
+                    ) : isUnanswered ? (
+                      <div className="px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 text-[10px] font-urbanist font-bold tracking-widest uppercase flex items-center gap-1.5">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Unanswered
                       </div>
                     ) : (
                       <div className="px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/30 text-[10px] font-urbanist font-bold tracking-widest uppercase flex items-center gap-1.5">
@@ -283,6 +302,7 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ reviewI
                   </div>
 
                   {/* AI Explanation for Incorrect Answers */}
+                 {/* AI Explanation for Incorrect Answers */}
                   {!isCorrect && q.aiExplanation && (
                     <div className="bg-zinc-50 dark:bg-zinc-800/40 rounded-xl p-3 md:p-4 mt-3 border border-zinc-200 dark:border-zinc-800">
                       <div className="flex items-center gap-1.5 mb-2">
@@ -292,12 +312,21 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ reviewI
                         </svg>
                         <h4 className="font-urbanist font-bold text-zinc-900 dark:text-zinc-50 text-[11px] tracking-widest uppercase">AI Insight</h4>
                       </div>
-                      <p className="text-xs font-inter text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                        {q.aiExplanation}
-                      </p>
+                      
+                      {/* SOLUSI: Render Markdown di AI Insight */}
+                      <div className="text-xs font-inter text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                        <ReactMarkdown
+                          components={{
+                            p: ({node, ...props}) => <p className="mb-1 last:mb-0" {...props} />,
+                            strong: ({node, ...props}) => <strong className="font-bold text-zinc-900 dark:text-zinc-100" {...props} />
+                          }}
+                        >
+                          {q.aiExplanation}
+                        </ReactMarkdown>
+                      </div>
+
                     </div>
                   )}
-
                 </div>
               );
             })}
@@ -323,23 +352,43 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ reviewI
           
           {/* Summary Section */}
           <div className="p-5 border-b border-zinc-100 dark:border-zinc-800/50">
-            <p className="text-sm font-inter text-zinc-600 dark:text-zinc-400 leading-relaxed mb-4">
-              {sessionData.aiSummary || "No summary generated for this session."}
-            </p>
+            {/* 1. Gunakan ReactMarkdown untuk aiSummary (className dipindah ke div pembungkus) */}
+            <div className="text-sm font-inter text-zinc-600 dark:text-zinc-400 leading-relaxed mb-4 flex flex-col gap-2">
+              <ReactMarkdown 
+                components={{
+                  p: ({node, ...props}) => <p className="mb-1 last:mb-0" {...props} />,
+                  strong: ({node, ...props}) => <strong className="font-bold text-zinc-800 dark:text-zinc-200" {...props} />,
+                }}
+              >
+                {sessionData.aiSummary || "No summary generated for this session."}
+              </ReactMarkdown>
+            </div>
+
             <div className="bg-zinc-50 dark:bg-zinc-900/50 rounded-xl p-4 border border-zinc-100 dark:border-zinc-800">
               <h4 className="text-[11px] font-urbanist font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-3">Tips to Improve</h4>
-              <ul className="space-y-2">
+              <ul className="space-y-3">
                 {sessionData.tips && sessionData.tips.length > 0 ? (
                   sessionData.tips.map((tip: string, i: number) => (
-                    <li key={i} className="flex items-start gap-2 text-sm font-inter text-zinc-700 dark:text-zinc-300">
-                      <span className="text-zinc-400 mt-1">•</span>
-                      {tip}
+                    <li key={i} className="flex items-start gap-2.5 text-sm font-inter text-zinc-700 dark:text-zinc-300">
+                      <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-600 shrink-0 mt-[7px]"></span>
+                      
+                      {/* 2. Gunakan ReactMarkdown juga untuk tiap Tip */}
+                      <ReactMarkdown 
+                        components={{
+                          // Pakai span untuk p agar list-nya tidak turun ke baris baru
+                          p: ({node, ...props}) => <span {...props} />, 
+                          strong: ({node, ...props}) => <strong className="font-bold text-zinc-900 dark:text-zinc-100" {...props} />,
+                        }}
+                      >
+                        {tip}
+                      </ReactMarkdown>
+
                     </li>
                   ))
                 ) : (
-                  <li className="flex items-start gap-2 text-sm font-inter text-zinc-700 dark:text-zinc-300">
-                    <span className="text-zinc-400 mt-1">•</span>
-                    Review your incorrect answers for more insights.
+                  <li className="flex items-start gap-2.5 text-sm font-inter text-zinc-700 dark:text-zinc-300">
+                    <span className="text-zinc-400 dark:text-zinc-500 shrink-0 mt-0.5">•</span>
+                    <span>Review your incorrect answers for more insights.</span>
                   </li>
                 )}
               </ul>
@@ -355,7 +404,27 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ reviewI
                     ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 rounded-br-sm' 
                     : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 rounded-bl-sm border border-zinc-200 dark:border-zinc-700/50'
                 }`}>
-                  {msg.text}
+                  
+                  {msg.role === 'user' ? (
+                    msg.text
+                  ) : (
+                    // SOLUSI: Bungkus ReactMarkdown dengan <div> untuk menaruh className
+                    <div className="flex flex-col gap-2">
+                      <ReactMarkdown 
+                        components={{
+                          p: ({node, ...props}) => <p className="mb-1 last:mb-0" {...props} />,
+                          ul: ({node, ...props}) => <ul className="list-disc ml-4 space-y-1" {...props} />,
+                          ol: ({node, ...props}) => <ol className="list-decimal ml-4 space-y-1" {...props} />,
+                          h3: ({node, ...props}) => <h3 className="font-bold text-base mt-2 mb-1" {...props} />,
+                          strong: ({node, ...props}) => <strong className="font-extrabold" {...props} />,
+                          code: ({node, ...props}) => <code className="bg-black/10 dark:bg-white/10 px-1 py-0.5 rounded text-xs" {...props} />
+                        }}
+                      >
+                        {msg.text}
+                      </ReactMarkdown>
+                    </div>
+                  )}
+                  
                 </div>
               </div>
             ))}
@@ -418,10 +487,16 @@ export default function ReviewDetailPage({ params }: { params: Promise<{ reviewI
         isOpen={isRetakeModalOpen}
         onClose={() => setIsRetakeModalOpen(false)}
         onStart={(timerEnabled) => {
-          router.push(`/dashboard/practice/${sessionData.moduleId}?timer=${timerEnabled}&retake=true`);
+          const summaryParam = encodeURIComponent(sessionData.aiSummary || "");
+          router.push(`/dashboard/practice/${sessionData.moduleId}?timer=${timerEnabled}&retake=true&summary=${summaryParam}`);
         }}
         title={`Retake: ${sessionData.moduleTitle}`}
-        duration="7 Minutes"
+        duration={
+          sessionData.moduleId === "listening" ? "7 Minutes" :
+          sessionData.moduleId === "structure" ? "6m 15s" :
+          sessionData.moduleId === "reading" ? "11 Minutes" :
+          "10 Minutes" // Fallback jika ID tidak dikenali
+        }
         isRetake={true}
         questions={10}
       />

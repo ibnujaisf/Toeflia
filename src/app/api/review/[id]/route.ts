@@ -21,7 +21,25 @@ export async function GET(
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, session });
+    // --- TAMBAHAN BARU: Hitung Global Attempt ---
+    // Menghitung jumlah tes milik user ini yang dibuat sebelum atau pada saat yang sama dengan tes ini
+    const attemptNumber = await prisma.testSession.count({
+      where: {
+        userId: session.userId,
+        moduleId: session.moduleId, // <--- TAMBAHKAN BARIS INI
+        createdAt: {
+          lte: session.createdAt, 
+        },
+      },
+    });
+
+    // Sisipkan globalAttempt ke dalam objek session sebelum dikirim ke frontend
+    const sessionWithAttempt = {
+      ...session,
+      globalAttempt: attemptNumber
+    };
+
+    return NextResponse.json({ success: true, session: sessionWithAttempt });
   } catch (error: any) {
     console.error("Error fetching session:", error);
     return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });

@@ -159,7 +159,7 @@ function About() {
                 {[
                   "AI generates and curates every question",
                   "Instant deep-dive explanations per answer",
-                  "Personalized Mistake Analysis after every session",
+                  "Personalized Mistake Insights after every session",
                   "AI Remedial: 10 targeted questions on your weak spots",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2.5">
@@ -310,7 +310,7 @@ function Features() {
             <div className="shrink-0 flex flex-col gap-3">
               {[
                 { step: "01", text: "Complete a practice session" },
-                { step: "02", text: "Review your AI Mistake Analysis" },
+                { step: "02", text: "Review your AI Mistake Insights" },
                 { step: "03", text: "Generate 10 targeted remedial questions" },
               ].map((item) => (
                 <div key={item.step} className="flex items-center gap-3">
@@ -349,7 +349,7 @@ const STEPS = [
   },
   {
     n: "04",
-    title: "AI Analysis & Retake",
+    title: "AI Insights & Retake",
     desc: "Get a full Personalized Mistake Report, then generate targeted remedial questions instantly.",
   },
 ];

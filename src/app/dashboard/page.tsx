@@ -73,13 +73,25 @@ export default function DashboardPage() {
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    
+    const d1 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const d2 = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const diffDays = Math.round((d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24));
 
-    if (days === 0) return "Today";
-    if (days === 1) return "Yesterday";
-    if (days < 7) return `${days} days ago`;
-    return date.toLocaleDateString();
+    const timeOptions: Intl.DateTimeFormatOptions = { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    };
+    const timeStr = date.toLocaleTimeString("en-US", timeOptions);
+
+    if (diffDays === 0) return `Today, ${timeStr}`;
+    if (diffDays === 1) return `Yesterday, ${timeStr}`;
+ 
+    return date.toLocaleDateString("en-US", {
+      weekday: 'long',
+      month: 'short',
+      day: 'numeric',
+    });
   };
 
   if (!mounted || !user) {

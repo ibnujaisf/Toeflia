@@ -60,14 +60,14 @@ export default function InsightsPage() {
 
     if (diffDays === 0) return `Today, ${timeStr}`;
     if (diffDays === 1) return `Yesterday, ${timeStr}`;
-    if (diffDays < 7) return `${diffDays} days ago, ${timeStr}`;
+   
     
     return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit"
+      weekday: 'long',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric'
     });
   };
 

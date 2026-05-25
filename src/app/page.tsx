@@ -8,6 +8,10 @@ import ThemeToggle from "@/components/ui/ThemeToggle";
 import { UserProvider } from "@/context/UserContext";
 import Logo from "@/components/ui/Logo";
 
+import ShinyText from "../components/reactbits/ShinyText";
+import StarBorder from "../components/reactbits/StarBorder";
+import SpotlightCard from "../components/reactbits/SpotlightCard";
+
 /* ─────────────────────────── HERO ──────────────────────────────────────── */
 function Hero({ onStart }: { onStart: () => void }) {
   return (
@@ -41,13 +45,17 @@ function Hero({ onStart }: { onStart: () => void }) {
           </span>
         </div>
 
-        {/* H1 */}
+        {/* H1 — with ShinyText for subtitle */}
         <h1 className="animate-fade-in-up delay-100 font-urbanist font-extrabold text-5xl md:text-7xl lg:text-8xl leading-[0.93] tracking-tight text-zinc-950 dark:text-zinc-50">
           Master the TOEFL.
           <br />
-          <span className="text-zinc-400 dark:text-zinc-500">
-            Powered Entirely by AI.
-          </span>
+          <ShinyText
+            text="Powered Entirely by AI."
+            speed={3}
+            color="#71717a"
+            shineColor="#fafafa"
+            className="font-urbanist font-extrabold"
+          />
         </h1>
 
         {/* Subtitle */}
@@ -56,18 +64,22 @@ function Hero({ onStart }: { onStart: () => void }) {
           weaknesses — not just your score.
         </p>
 
-        {/* CTAs */}
+        {/* CTAs — StarBorder on primary button */}
         <div className="animate-fade-in-up delay-300 flex flex-col sm:flex-row items-center gap-3 mt-2">
-          <button
-            id="hero-cta"
+          <StarBorder
+            color="#a855f7"
+            speed="5s"
+            thickness={2}
             onClick={onStart}
-            className="group flex items-center gap-2 bg-zinc-950 dark:bg-white text-white dark:text-black font-urbanist font-bold text-sm px-8 py-4 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-100 active:scale-95 transition-all duration-200"
+            className="cursor-pointer"
           >
-            Let&apos;s Start
-            <svg className="w-4 h-4 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </button>
+            <span className="group flex items-center gap-2 bg-zinc-950 dark:bg-white text-white dark:text-black font-urbanist font-bold text-sm px-8 py-4 rounded-full transition-all duration-200">
+              Let&apos;s Start
+              <svg className="w-4 h-4 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </span>
+          </StarBorder>
           <a
             href="#about"
             className="text-sm font-inter text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 px-4 py-4 transition-colors"
@@ -235,38 +247,40 @@ function Features() {
           </p>
         </div>
 
-        {/* Module cards row */}
+        {/* Module cards row — SpotlightCard */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
           {MODULES.map((m) => (
-            <div
+            <SpotlightCard
               key={m.id}
-              id={m.id}
-              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 flex flex-col gap-4 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-300 group"
+              spotlightColor="rgba(168, 85, 247, 0.15)"
+              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 flex flex-col gap-4 hover:border-zinc-300 dark:hover:border-zinc-600 transition-all duration-300 group"
             >
-              <div className="flex items-start justify-between">
-                <div className="w-11 h-11 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-xl group-hover:scale-105 transition-transform duration-300">
-                  {m.icon}
+              <div className="relative z-10 flex flex-col gap-4">
+                <div className="flex items-start justify-between">
+                  <div className="w-11 h-11 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-xl group-hover:scale-110 transition-transform duration-300">
+                    {m.icon}
+                  </div>
+                  <span className="text-[10px] font-inter text-zinc-400 dark:text-zinc-600 uppercase tracking-widest pt-1">
+                    {m.tag}
+                  </span>
                 </div>
-                <span className="text-[10px] font-inter text-zinc-400 dark:text-zinc-600 uppercase tracking-widest pt-1">
-                  {m.tag}
-                </span>
+                <div>
+                  <h3 className="font-urbanist font-bold text-base text-zinc-950 dark:text-zinc-50 mb-1 leading-tight">
+                    {m.label}
+                  </h3>
+                  <p className="text-xs text-zinc-500 font-inter leading-relaxed">{m.desc}</p>
+                </div>
+                <div className="flex items-center gap-3 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                  <span className="text-xs font-inter text-zinc-400 dark:text-zinc-600 font-medium">
+                    {m.q} questions
+                  </span>
+                  <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                  <span className="text-xs font-inter text-zinc-400 dark:text-zinc-600 font-medium">
+                    {m.time}
+                  </span>
+                </div>
               </div>
-              <div>
-                <h3 className="font-urbanist font-bold text-base text-zinc-950 dark:text-zinc-50 mb-1 leading-tight">
-                  {m.label}
-                </h3>
-                <p className="text-xs text-zinc-500 font-inter leading-relaxed">{m.desc}</p>
-              </div>
-              <div className="flex items-center gap-3 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                <span className="text-xs font-inter text-zinc-400 dark:text-zinc-600 font-medium">
-                  {m.q} questions
-                </span>
-                <span className="text-zinc-300 dark:text-zinc-700">·</span>
-                <span className="text-xs font-inter text-zinc-400 dark:text-zinc-600 font-medium">
-                  {m.time}
-                </span>
-              </div>
-            </div>
+            </SpotlightCard>
           ))}
         </div>
 
@@ -403,13 +417,17 @@ function Footer({ onStart }: { onStart: () => void }) {
           <p className="text-sm text-zinc-500 font-inter mb-6">
             Free forever. No sign-up required. AI-ready from day one.
           </p>
-          <button
-            id="footer-cta"
+          <StarBorder
+            color="#a855f7"
+            speed="5s"
+            thickness={2}
             onClick={onStart}
-            className="inline-flex items-center gap-2 bg-zinc-950 dark:bg-white text-white dark:text-black font-urbanist font-bold text-sm px-7 py-3.5 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-100 active:scale-95 transition-all duration-150"
+            className="cursor-pointer"
           >
-            Let&apos;s Start →
-          </button>
+            <span className="inline-flex items-center gap-2 bg-zinc-950 dark:bg-white text-white dark:text-black font-urbanist font-bold text-sm px-7 py-3.5 rounded-full transition-all duration-150">
+              Let&apos;s Start →
+            </span>
+          </StarBorder>
         </div>
 
         {/* Bottom row */}

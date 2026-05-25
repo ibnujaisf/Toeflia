@@ -27,7 +27,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="bg-white dark:bg-zinc-950">
       <head>
         {/* Anti-flash theme script — runs synchronously before paint */}
         <script

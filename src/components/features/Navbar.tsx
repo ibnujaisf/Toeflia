@@ -23,6 +23,19 @@ export default function Navbar({ onStartLearning }: NavbarProps) {
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
+  // FITUR BARU: Fungsi untuk Smooth Scrolling saat menu diklik
+  const handleScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    const targetId = href.replace("#", "");
+    const elem = document.getElementById(targetId);
+    if (elem) {
+      elem.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  };
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-500 ${
@@ -36,6 +49,7 @@ export default function Navbar({ onStartLearning }: NavbarProps) {
             : "bg-white/70 dark:bg-zinc-950/60 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 rounded-full mx-auto max-w-3xl"
         }`}
       >
+        {/* Struktur asli dikembalikan */}
         <div className="flex items-center justify-between px-5 py-3">
           {/* Logo */}
           <Link
@@ -55,6 +69,7 @@ export default function Navbar({ onStartLearning }: NavbarProps) {
               <a
                 key={link.href}
                 href={link.href}
+                onClick={(e) => handleScroll(e, link.href)} // <-- Event Smooth Scroll dipasang di sini
                 className="px-4 py-2 text-sm font-inter text-zinc-500 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-50 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-all duration-200"
               >
                 {link.label}

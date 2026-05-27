@@ -10,17 +10,30 @@ INSTRUKSI VARIASI & KEBARUAN (SANGAT PENTING):
 - Jangan gunakan percakapan atau nama karakter yang klise/berulang.
 
 KOMPOSISI WAJIB (10 Soal):
-- 6 Soal Part A (Short Conversation): 6 rekaman percakapan pendek terpisah. Masing-masing 1 pertanyaan (makna tersirat, saran, atau topik).
-- 2 Soal Part B (Longer Conversation): 1 rekaman percakapan agak panjang tentang topik perkuliahan/kampus, diikuti 2 pertanyaan.
-- 2 Soal Part C (Talks/Lectures): 1 rekaman ceramah akademis singkat, diikuti 2 pertanyaan (ide pokok atau detail spesifik).
+- 6 Soal Part A (Short Conversation): 6 rekaman percakapan pendek terpisah. Masing-masing 1 pertanyaan (makna tersirat, saran, atau topik). Materi yang diuji meliputi pencarian makna kata (meaning), ungkapan idiom (idiomatic expression), saran (suggestion), asumsi, prediksi, makna tersirat (implikasi), masalah yang sedang dihadapi pembicara (problem), dan topik pembicaraan.
+- 2 Soal Part B (Longer Conversation): 1 rekaman percakapan agak panjang tentang topik perkuliahan/kampus, diikuti 2 pertanyaan. Menguji pemahaman terhadap percakapan yang lebih panjang dengan tema informal (obrolan antarteman/keluarga) maupun akademis (diskusi mahasiswa dan dosen). Materi yang spesifik ditanyakan adalah situasi percakapan (waktu, tempat, apa, dan siapa yang dibicarakan), ungkapan fungsional (agreement, uncertainty, suggestion, surprise), dan ungkapan idiom.
+- 2 Soal Part C (Talks/Lectures): 1 rekaman ceramah akademis singkat, diikuti 2 pertanyaan (ide pokok atau detail spesifik). Menguji pemahaman dari ceramah panjang seperti diskusi kelas, program radio, tur wisata, atau perkuliahan. Materi difokuskan pada kemampuan menangkap informasi 5W1H (who, what, when, where, why, how) dan menyimpulkan situasi saat pembicaraan berlangsung.
 
-ATURAN FORMAT:
-- Wajib sertakan field "transcript" berisi teks percakapan. Gunakan karakter \n (newline) setiap kali ada pergantian pembicara agar teks tidak menyatu menjadi 1 paragraf blok. Pisahkan baris tiap pembicara.
-- Gunakan field "text" untuk teks pertanyaan (bukan questionText).
-- Field "options" HARUS berupa array berisi 4 pilihan jawaban MURNI TANPA awalan huruf (A), (B), (C), (D).
-Format: [{ "id": 1, "type": "listening", "transcript": "...", "text": "...", "options": ["jawaban 1", "jawaban 2", "jawaban 3", "jawaban 4"], "correctAnswer": 0 }]
-Return HANYA JSON array murni tanpa markdown.
-- PENTING: JANGAN PERNAH menggunakan istilah teknis koding seperti 'indeks 0', 'indeks 1', atau 'array'. Jika merujuk pada jawaban, gunakan 'Pilihan A', 'Pilihan B', atau langsung sebutkan kutipan teks jawabannya.
+ATURAN FORMAT (WAJIB DIIKUTI 100%):
+- Wajib sertakan field "transcript" berisi teks percakapan. HANYA PERCAKAPAN/CERAMAH SAJA. JANGAN memasukkan pertanyaan (Narrator) ke dalam transcript!
+- PEMISAH DIALOG: Gunakan karakter "\n" (newline) di dalam string "transcript" setiap kali ada pergantian pembicara agar teks terpisah.
+- DILARANG menggunakan singkatan seperti W1, M1, W2, dll.
+- WAJIB gunakan awalan "Woman: " atau "Man: " di setiap awal baris dialog (jika itu percakapan pendek).
+- Gunakan field "text" HANYA untuk teks pertanyaan.
+- Field "options" HARUS berupa array berisi 4 pilihan jawaban MURNI TANPA awalan huruf A, B, C, D atau (A), (B), (C), (D).
+
+Format Wajib (Ikuti persis seperti ini):
+[
+  { 
+    "id": 1, 
+    "type": "listening", 
+    "transcript": "Woman: Have you finished the financial report?\nMan: Not yet, I need another hour to double-check the numbers.", 
+    "text": "What does the man mean?", 
+    "options": ["He is done with the report", "He needs more time to check it", "He lost the financial numbers", "He hasn't started yet"], 
+    "correctAnswer": 1 
+  }
+]
+Return HANYA JSON array murni tanpa blok markdown atau backticks sama sekali.
 `;
 
 export const GENERATE_STRUCTURE_PROMPT = `
@@ -64,20 +77,40 @@ INSTRUKSI VARIASI & KEBARUAN (SANGAT PENTING):
 - Hindari mengulang topik yang sama. Gunakan rentang disiplin ilmu yang luas seperti: Geologi, Sosiologi, Penemuan Sejarah, Astronomi, Zoologi, atau Biografi Tokoh.
 
 KOMPOSISI WAJIB:
-Buat 1 Teks Bacaan Akademik ilmiah (sekitar 200-450 kata). Lalu buat 10 soal berdasarkan teks tersebut dengan rincian:
-- 1 Soal Main Idea (Topik/ide utama).
-- 3 Soal Detail: 1 Stated Detail, 1 Unstated Detail (Pengecualian/NOT), 1 Implied Detail (Tersirat).
-- 3 Soal Vocabulary in Context: 1 Difficult word, 1 Pronoun Referent (misal: "they" merujuk pada...), 1 Definisi dari struktur kata.
-- 1 Soal Organization / Transition (Menebak topik paragraf sebelum/sesudah bacaan).
-- 1 Soal Tone / Purpose (Nada emosi atau tujuan penulis).
-- 1 Soal Location (Menanyakan di baris ke berapa informasi tertentu berada).
+Buat 1 Teks Bacaan Akademik ilmiah (sekitar 200-450 kata) dan di buat menjadi 3 paragraf. Lalu buat 10 soal berdasarkan teks tersebut dengan rincian materi di bawah, dan karena materinya banyak maka acak aja materinya dan ambil setiap soal 1 materi:
+- Main Idea Question: Menentukan topik, subjek, judul, atau gagasan utama dari sebuah bacaan atau paragraf.
+- Organization of Ideas: Menentukan bagaimana ide/gagasan pada satu paragraf berhubungan dengan paragraf lainnya.
+- Stated Detail: Mencari informasi spesifik yang secara tertulis (tersurat) ada di dalam teks.
+- Unstated Detail: Mencari pengecualian atau informasi yang TIDAK disebutkan atau SALAH berdasarkan teks.
+- Pronoun Referents: Mencari rujukan dari sebuah kata ganti (misalnya kata they merujuk pada benda/subjek apa sebelumnya).
+- Implied Detail: Menarik kesimpulan (inferred, likely, probably) yang tersirat dari informasi di dalam teks.
+- Transition Question: Menebak topik apa yang kira-kira dibahas pada paragraf sebelum (preceding) atau sesudah bacaan tersebut.
+- Definitions from Structural Clues: Menentukan makna kata menggunakan petunjuk dari struktur kalimat yang memberikan definisi kata tersebut.
+- Meanings from Word Parts: Menentukan makna kata berdasarkan unsur/akar katanya (misalnya awalan viv- berarti kehidupan).
+- Difficult Words from Context: Menebak arti kata yang sulit/asing dengan melihat petunjuk pada konteks kalimat di sekitarnya.
+- Simple Words from Context: Menentukan makna sekunder atau makna alternatif dari kata yang umum digunakan sehari-hari, bergantung pada konteks kalimatnya.
+- Where Specific Information Is Found: Mencari di baris ke berapa penulis menyebutkan sebuah informasi tertentu.
+- Tone, Purpose, or Course: Menentukan nada/emosi bacaan (informational, humorous, dll), tujuan penulis menyusun bacaan tersebut, atau materi perkuliahan apa yang cocok menggunakan teks tersebut.
 
-ATURAN FORMAT:
+ATURAN FORMAT (WAJIB DIIKUTI 100%):
 - Wajib sertakan field "passage" berisi teks bacaan yang SAMA di SETIAP object soal.
+- PEMISAH PARAGRAF: Anda WAJIB menggunakan simbol "\n\n" (dua kali newline) di dalam teks "passage" untuk memisahkan paragraf. Teks minimal 3 paragraf. JANGAN buat teks menggumpal!
 - Gunakan field "text" untuk teks pertanyaan (bukan questionText).
-- Field "options" HARUS berupa array berisi 4 pilihan jawaban MURNI TANPA awalan huruf (A), (B), (C), (D).
-Format: [{ "id": 1, "type": "reading", "passage": "...", "text": "...", "options": ["jawaban 1", "jawaban 2", "jawaban 3", "jawaban 4"], "correctAnswer": 0 }]
-Return HANYA JSON array murni tanpa markdown.
+- DILARANG MENGGUNAKAN NOMOR BARIS: DILARANG KERAS membuat soal yang merujuk pada nomor baris (Contoh salah: "in line 10"). Jika merujuk pada kata (pronoun), sebutkan letak paragrafnya (Contoh benar: "The word 'it' in the second paragraph refers to...").
+- Field "options" HARUS berupa array berisi 4 pilihan jawaban MURNI TANPA awalan huruf A, B, C, D atau (A), (B), (C), (D).
+
+Format Wajib (Ikuti persis seperti ini):
+[
+  { 
+    "id": 1, 
+    "type": "reading", 
+    "passage": "Ini paragraf satu.\n\nIni paragraf dua terpisah dengan jelas.\n\nIni paragraf tiga.", 
+    "text": "Pertanyaan tanpa menyebutkan nomor baris...", 
+    "options": ["jawaban 1", "jawaban 2", "jawaban 3", "jawaban 4"], 
+    "correctAnswer": 0 
+  }
+]
+Return HANYA JSON array murni tanpa blok markdown atau backticks sama sekali.
 `;
 
 // ==========================================
@@ -172,10 +205,13 @@ Berdasarkan evaluasi tes sebelumnya, user memiliki kelemahan berikut:
 
 TUGAS ANDA:
 1. ABAIKAN komposisi standar TOEFL ITP. 
-2. Sesuaikan TIPE SOAL 100% dengan kelemahan di atas. 
-   - Jika user lemah di percakapan pendek, buat 10 soal tipe Short Conversation (Part A).
-   - Jika user lemah di ceramah panjang, buat 10 soal tipe Talks/Lectures (Part C).
-   - Jika kelemahan campur, sesuaikan rasionya agar fokus menyerang kelemahan tersebut.
+2. KOMPOSISI SOAL PROPORSIONAL BERDASARKAN KELEMAHAN.
+   - BACA dengan teliti ringkasan kelemahan (aiSummary). 
+   - JANGAN PERNAH membuat 100% satu tipe bagian saja jika ringkasan menunjukkan ada kelemahan di beberapa area (Part A, Part B, atau Part C).
+   - Buatlah komposisi 10 soal yang didistribusikan secara proporsional. 
+   - Contoh: Jika kelemahan sangat dominan di percakapan pendek (Part A) namun ada sedikit kelemahan di ceramah panjang (Part C) dengan rasio 3:1, maka buatlah sekitar 7 soal Part A dan 3 soal Part C.
+   - Jika kelemahan tersebar merata, buatlah komposisi yang seimbang antara Part A, B, dan C.
+   - Rancang jenis jebakan (misal: idiom, negative expression, who/what/where) persis seperti yang disoroti dalam ringkasan. Pastikan total soal tetap TEPAT 10.
 
 ATURAN FORMAT:
 - Wajib sertakan field "transcript". Gunakan karakter \n (newline) tiap ganti pembicara.
@@ -195,10 +231,13 @@ Berdasarkan evaluasi tes sebelumnya, user memiliki kelemahan tata bahasa berikut
 
 TUGAS ANDA:
 1. ABAIKAN komposisi standar TOEFL ITP.
-2. Sesuaikan TIPE SOAL 100% dengan kelemahan di atas.
-   - Jika summary menyebutkan kelemahan pada "mencari kesalahan / Written Expression", BUAT 10 SOAL WRITTEN EXPRESSION SAJA.
-   - Jika summary menyebutkan kelemahan pada "melengkapi kalimat rumpang / Structure", BUAT 10 SOAL STRUCTURE SAJA.
-   - Rancang grammar jebakan spesifik sesuai kelemahan yang disebutkan.
+2. KOMPOSISI SOAL PROPORSIONAL BERDASARKAN KELEMAHAN.
+   - BACA dengan teliti ringkasan kelemahan (aiSummary). 
+   - JANGAN PERNAH membuat 100% satu tipe soal saja jika ringkasan menunjukkan ada kesalahan di kedua area (Structure dan Written Expression).
+   - Buatlah komposisi 10 soal yang didistribusikan secara proporsional. 
+   - Contoh: Jika kelemahan sangat dominan di "Written Expression" namun ada sedikit kelemahan di "Structure" (rasio 3:1), maka buatlah sekitar 7 soal Written Expression dan 3 soal Structure.
+   - Jika kelemahan seimbang, buatlah komposisi 5:5.
+   - Rancang jebakan grammar spesifik (seperti Inversion, Relative Clause, dll) persis seperti yang disoroti dalam ringkasan. Pastikan total soal tetap TEPAT 10.
 
 ATURAN FORMAT WRITTEN EXPRESSION (Jika Digunakan):
 Tuliskan kalimat utuhnya di field "text" dan berikan tanda (A), (B), (C), (D) SEBELUM kata yang digarisbawahi/diuji. 
@@ -220,11 +259,14 @@ Berdasarkan evaluasi tes sebelumnya, user memiliki kelemahan berikut:
 
 TUGAS ANDA:
 1. ABAIKAN komposisi standar TOEFL ITP.
-2. Sediakan 1 Teks Bacaan Akademik ilmiah (sekitar 200-450 kata).
+2. Sediakan 1 Teks Bacaan Akademik ilmiah (sekitar 200-450 kata) dan di buat menjadi 1-3 paragraf.
 3. Sesuaikan TIPE PERTANYAAN 100% dengan kelemahan di atas.
-   - Jika user lemah mencari makna kata, buat mayoritas atau seluruh 10 pertanyaan berupa tipe Vocabulary in Context.
-   - Jika user lemah di makna tersirat, buat 10 pertanyaan tipe Implied Details & Inference.
-   - Jika lemah di Main Idea, fokuskan pertanyaan ke seputar tujuan bacaan dan paragraf.
+   - BACA dengan teliti ringkasan kelemahan (aiSummary). 
+   - JANGAN PERNAH membuat 100% satu tipe pertanyaan saja jika ringkasan menunjukkan ada kelemahan di beberapa area (Main Idea, Vocabulary, Detail, Inference, dll).
+   - Buatlah komposisi 10 soal yang didistribusikan secara proporsional dalam 1 atau 2 teks (passage) yang disediakan.
+   - Contoh: Jika kelemahan dominan di "Vocabulary" tapi ada masalah di "Inference" (rasio 3:1), maka buatlah sekitar 7 soal Vocabulary dan 3 soal Inference.
+   - Jika kelemahan tersebar merata, buatlah variasi soal yang seimbang untuk teks tersebut.
+   - Rancang tingkat kesulitan pertanyaan persis sesuai dengan area yang disoroti dalam ringkasan. Pastikan total soal tetap TEPAT 10.
 
 ATURAN FORMAT:
 - Wajib sertakan field "passage" berisi teks bacaan yang SAMA di SETIAP object soal.

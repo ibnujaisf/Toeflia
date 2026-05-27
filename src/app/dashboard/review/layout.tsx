@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Review History — Toeflia",
+  title: "Review — Toeflia",
 };
 
 export default function ReviewLayout({

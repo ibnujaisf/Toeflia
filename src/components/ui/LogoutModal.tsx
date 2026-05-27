@@ -92,38 +92,42 @@ export default function LogoutModal({ open, onClose }: LogoutModalProps) {
 
         {/* Description */}
         <p className="text-sm text-zinc-500 dark:text-zinc-400 font-inter leading-relaxed mb-7">
-          You can save your current progress, or wipe your data completely from
-          this device.
+          You can save your current progress, or delete all your test history and data from this device.
         </p>
 
         {/* Actions */}
-        <div className="flex flex-col gap-3">
-          {/* Save & Exit — outline/secondary */}
-          <button
-            id="logout-save-exit"
-            onClick={handleSaveExit}
-            className="w-full py-3 px-6 rounded-full border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 font-urbanist font-bold text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 active:scale-[0.98] transition-all duration-150"
-          >
-            Save &amp; Exit
-          </button>
+       <div className="flex flex-col gap-3">
+          
+          {/* Baris Atas: Save & Exit dan Wipe Data berdampingan */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Save & Exit — Primary Action */}
+            <button
+              id="logout-save-exit"
+              onClick={handleSaveExit}
+             className="flex-1 px-4 py-2.5 rounded-full border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-urbanist font-bold text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+              >
+              Save & Exit
+            </button>
 
-          {/* Wipe Data & Exit — high-contrast primary */}
-          <button
-            id="logout-wipe-exit"
-            onClick={handleWipeExit}
-            className="w-full py-3 px-6 rounded-full bg-red-600 text-white font-urbanist font-bold text-sm hover:bg-red-700 active:scale-[0.98] transition-all duration-150"
-          >
-            Wipe Data &amp; Exit
-          </button>
+            {/* Wipe Data & Exit — Original Solid Red */}
+            <button
+              id="logout-wipe-exit"
+              onClick={handleWipeExit}
+              className="flex-1 px-4 py-2.5 rounded-full bg-red-600 text-white font-urbanist font-bold text-sm hover:bg-red-700 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+              Delete & Exit
+            </button>
+          </div>
 
-          {/* Cancel */}
+          {/* Baris Bawah: Cancel — Premium Outline */}
           <button
             id="logout-cancel"
             onClick={onClose}
-            className="w-full py-2.5 px-6 rounded-full text-zinc-400 dark:text-zinc-600 font-inter text-sm hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors duration-150"
-          >
+            className="flex-1 px-4 py-2.5 rounded-full border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-urbanist font-bold text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+              >
             Cancel
           </button>
+
         </div>
       </div>
     </div>

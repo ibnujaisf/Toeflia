@@ -16,23 +16,29 @@ const NAV_LINKS = [
 
 export default function Navbar({ onStartLearning }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // State untuk mendeteksi user
 
   useEffect(() => {
+    // Logic untuk mendeteksi scroll
     const handler = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", handler, { passive: true });
+    
+    // Logic untuk mendeteksi apakah user sudah masuk sebelumnya
+    const storedUser = localStorage.getItem("toeflia_user_profile");
+    if (storedUser) {
+      setIsLoggedIn(true);
+    }
+
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
-  // FITUR BARU: Fungsi untuk Smooth Scrolling saat menu diklik
+  // Fitur Smooth Scroll
   const handleScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
     const targetId = href.replace("#", "");
     const elem = document.getElementById(targetId);
     if (elem) {
-      elem.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
+      elem.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
@@ -49,14 +55,9 @@ export default function Navbar({ onStartLearning }: NavbarProps) {
             : "bg-white/70 dark:bg-zinc-950/60 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 rounded-full mx-auto max-w-3xl"
         }`}
       >
-        {/* Struktur asli dikembalikan */}
         <div className="flex items-center justify-between px-5 py-3">
           {/* Logo */}
-          <Link
-            href="/"
-            id="nav-logo"
-            className="flex items-center gap-2.5 group"
-          >
+          <Link href="/" id="nav-logo" className="flex items-center gap-2.5 group">
             <Logo className="w-12 h-12 transition-transform group-hover:scale-105" />
             <h2 className="font-urbanist font-extrabold text-xl text-zinc-950 dark:text-zinc-50 tracking-tight">
               Toeflia
@@ -69,7 +70,7 @@ export default function Navbar({ onStartLearning }: NavbarProps) {
               <a
                 key={link.href}
                 href={link.href}
-                onClick={(e) => handleScroll(e, link.href)} // <-- Event Smooth Scroll dipasang di sini
+                onClick={(e) => handleScroll(e, link.href)}
                 className="px-4 py-2 text-sm font-inter text-zinc-500 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-50 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-all duration-200"
               >
                 {link.label}
@@ -77,13 +78,13 @@ export default function Navbar({ onStartLearning }: NavbarProps) {
             ))}
           </div>
 
-          {/* CTA */}
+          {/* CTA DINAMIS */}
           <button
             id="nav-cta"
             onClick={onStartLearning}
-            className="bg-zinc-950 dark:bg-white text-white dark:text-black font-urbanist font-bold text-sm px-5 py-2 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-100 active:scale-95 transition-all duration-150"
+            className="bg-zinc-950 dark:bg-white text-white dark:text-black font-urbanist font-bold text-sm px-5 py-2 rounded-full hover:scale-105 hover:bg-zinc-800 dark:hover:bg-zinc-200 active:scale-95 transition-all duration-300 shadow-sm hover:shadow-md"
           >
-            Let&apos;s Start
+            {isLoggedIn ? "Dashboard" : "Get Started"}
           </button>
         </div>
       </nav>

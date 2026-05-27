@@ -87,34 +87,41 @@ export default function OnboardingModal({ isOpen, onClose }: OnboardingModalProp
     >
       <div className="animate-scale-in w-full max-w-md">
         {step === "loading" ? (
-          /* Loading state */
-          <div className="flex flex-col items-center gap-6 py-16">
-            <div
-              className="w-14 h-14 rounded-full border-2 border-zinc-700"
-              style={{ borderTopColor: "#fafafa", animation: "spin 0.8s linear infinite" }}
-            />
+          /* Loading state — Kotak (card) yang sama dengan form */
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 shadow-2xl flex flex-col items-center justify-center gap-6 py-16 animate-fade-in">
+            
+            {/* 👇 INI DIA GANTINYA: 3 Bulat Naik Turun 👇 */}
+            <div className="flex items-center gap-2 pb-1">
+              {/* Bulat 1 (Delay paling lama) */}
+              <div className="w-3.5 h-3.5 rounded-full bg-zinc-900 dark:bg-zinc-50 animate-bounce [animation-delay:-0.3s]" />
+              {/* Bulat 2 (Delay sedang) */}
+              <div className="w-3.5 h-3.5 rounded-full bg-zinc-900 dark:bg-zinc-50 animate-bounce [animation-delay:-0.15s]" />
+              {/* Bulat 3 (Tanpa delay) */}
+              <div className="w-3.5 h-3.5 rounded-full bg-zinc-900 dark:bg-zinc-50 animate-bounce" />
+            </div>
+            {/* 👆 SAMPAI SINI 👆 */}
+            
             <div className="text-center">
-              <p className="font-urbanist font-bold text-xl text-zinc-50">
+              {/* Teks responsif tetap sama */}
+              <p className="font-urbanist font-bold text-xl text-zinc-950 dark:text-zinc-50">
                 Setting up your workspace…
               </p>
-              <p className="text-sm text-zinc-500 mt-1 font-inter">Almost there 🎯</p>
+              <p className="text-md text-zinc-500 mt-1 font-inter">
+                Almost there 🎯
+              </p>
             </div>
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            
           </div>
         ) : (
           /* Form */
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 shadow-2xl">
             {/* Header */}
             <div className="mb-7">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-full mb-4">
-                <span className="w-1.5 h-1.5 rounded-full bg-zinc-950 dark:bg-white animate-pulse" />
-                <span className="text-xs text-zinc-500 dark:text-zinc-300 font-inter">Quick Setup</span>
-              </div>
               <h2 className="font-urbanist font-extrabold text-2xl text-zinc-950 dark:text-zinc-50 leading-tight">
                 Let&apos;s get to know you 👋
               </h2>
               <p className="text-zinc-500 text-sm mt-1 font-inter">
-                Help the AI personalize your experience.
+               So Toeflia knows exactly where to start.
               </p>
             </div>
 
@@ -133,7 +140,7 @@ export default function OnboardingModal({ isOpen, onClose }: OnboardingModalProp
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-                  placeholder="e.g. Alex Rivera"
+                  placeholder="e.g. John Wayne"
                   className={inputCls}
                   autoComplete="off"
                 />
@@ -210,17 +217,17 @@ export default function OnboardingModal({ isOpen, onClose }: OnboardingModalProp
               {error && <p className="text-xs text-red-500 dark:text-red-400 font-inter -mt-1">{error}</p>}
 
               <div className="flex items-center gap-3 mt-1">
-                <button
+               <button
                   id="onboard-submit"
                   type="submit"
-                  className="flex-1 bg-zinc-950 dark:bg-white text-white dark:text-black font-urbanist font-bold text-sm py-3.5 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-100 active:scale-[0.98] transition-all duration-150"
+                  className="group flex-1 flex items-center justify-center gap-2 bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 font-urbanist font-bold text-sm py-3.5 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 hover:scale-105 active:scale-95 transition-all duration-300"
                 >
-                  Enter Dashboard →
+                  Enter Dashboard
                 </button>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-3.5 text-zinc-400 dark:text-zinc-500 text-sm font-inter hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
+                  className="flex items-center justify-center text-sm font-urbanist font-bold text-zinc-900 dark:text-zinc-50 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 px-7 py-3.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:scale-105 active:scale-95 transition-all duration-300 shadow-sm"
                 >
                   Cancel
                 </button>

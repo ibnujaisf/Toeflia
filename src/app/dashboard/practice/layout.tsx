@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Practice Modules — Toeflia",
+  title: "Practice — Toeflia",
 };
 
 export default function PracticeLayout({

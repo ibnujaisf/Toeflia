@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useTheme } from "@/context/ThemeContext";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/features/Navbar";
 import OnboardingModal from "@/components/features/OnboardingModal";
@@ -11,9 +12,19 @@ import Logo from "@/components/ui/Logo";
 import ShinyText from "../components/reactbits/ShinyText";
 import StarBorder from "../components/reactbits/StarBorder";
 import SpotlightCard from "../components/reactbits/SpotlightCard";
+import CountUp from "../components/reactbits/CountUp";
+import BlurText from "../components/reactbits/BlurText";
 
 /* ─────────────────────────── HERO ──────────────────────────────────────── */
-function Hero({ onStart }: { onStart: () => void }) {
+function Hero({ onStart, isLoggedIn }: { onStart: () => void; isLoggedIn: boolean }) {
+  // Ganti resolvedTheme menjadi theme (sesuaikan jika nama variabel di context-mu berbeda)
+  const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <section
       id="home"
@@ -22,11 +33,6 @@ function Hero({ onStart }: { onStart: () => void }) {
       {/* Grid bg */}
       <div
         className="absolute inset-0 opacity-[0.035] dark:opacity-[0.04]"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(0,0,0,0.8) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.8) 1px,transparent 1px)",
-          backgroundSize: "48px 48px",
-        }}
       />
       {/* Spotlight */}
       <div
@@ -38,66 +44,104 @@ function Hero({ onStart }: { onStart: () => void }) {
       />
       <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center gap-6">
         {/* Badge */}
-        <div className="animate-fade-in-up inline-flex items-center gap-2.5 px-4 py-2 bg-zinc-100 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 rounded-full">
-          <span className="w-2 h-2 rounded-full bg-zinc-950 dark:bg-white animate-pulse" />
-          <span className="text-xs font-inter text-zinc-500 dark:text-zinc-400 tracking-wide">
-            TOEFL Intelligent Academy
-          </span>
+        <div className="animate-fade-in-up relative inline-flex items-center justify-center mt-6 mb-2">
+          {/* Ornamen Bintang Kiri Atas */}
+          <svg className="absolute -top-2.5 -left-3.5 w-4 h-4 text-zinc-950 dark:text-white animate-pulse" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 1L14.5 9.5L23 12L14.5 14.5L12 23L9.5 14.5L1 12L9.5 9.5L12 1Z" />
+          </svg>
+
+          {/* Ornamen Bintang Kanan Bawah */}
+          <svg className="absolute -bottom-1.5 -right-2.5 w-3 h-3 text-zinc-400 dark:text-zinc-500 animate-pulse" style={{ animationDelay: '0.5s' }} viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 1L14.5 9.5L23 12L14.5 14.5L12 23L9.5 14.5L1 12L9.5 9.5L12 1Z" />
+          </svg>
+
+          {/* Kapsul Utama (Tanpa Dot) */}
+          <div className="inline-flex items-center px-4 py-2 bg-zinc-100 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 rounded-full relative z-10">
+            <span className="text-xs font-inter text-zinc-600 dark:text-zinc-300 tracking-wide font-medium">
+              Next-Gen TOEFL Simulator
+            </span>
+          </div>
         </div>
 
         {/* H1 — with ShinyText for subtitle */}
-        <h1 className="animate-fade-in-up delay-100 font-urbanist font-extrabold text-5xl md:text-7xl lg:text-8xl leading-[0.93] tracking-tight text-zinc-950 dark:text-zinc-50">
-          Master the TOEFL.
+        <h1 className="animate-fade-in-up delay-100 font-urbanist font-extrabold text-5xl md:text-7xl lg:text-8xl leading-[0.87] tracking-tight text-zinc-950 dark:text-zinc-50">
+          Train Smarter.
           <br />
-          <ShinyText
-            text="Powered Entirely by AI."
-            speed={3}
-            color="#71717a"
-            shineColor="#fafafa"
-            className="font-urbanist font-extrabold"
-          />
+          {mounted ? (
+            <ShinyText
+              key={theme} // Gunakan theme dari context-mu
+              text="Score Higher."
+              speed={3}
+              color="#71717a"
+              // Cek menggunakan theme dari context-mu
+              shineColor={theme === "light" ? "#09090b" : "#fafafa"}
+              className="font-urbanist font-extrabold inline-block pt-3 pb-4"
+            />
+          ) : (
+            <span className="font-urbanist font-extrabold inline-block pt-3 pb-4 text-[#71717a]">
+              Score Higher.
+            </span>
+          )}
         </h1>
 
         {/* Subtitle */}
         <p className="animate-fade-in-up delay-200 max-w-lg text-zinc-500 dark:text-zinc-400 text-base md:text-lg font-inter leading-relaxed">
-          A next-generation micro-learning simulator that adapts to your exact
-          weaknesses — not just your score.
+          The AI-powered TOEFL simulator that doesn't just grade your answers — it understands why you got them wrong, then helps you never miss again.
         </p>
 
-        {/* CTAs — StarBorder on primary button */}
-        <div className="animate-fade-in-up delay-300 flex flex-col sm:flex-row items-center gap-3 mt-2">
-          <StarBorder
-            color="#a855f7"
-            speed="5s"
-            thickness={2}
+        {/* CTAs */}
+        <div className="animate-fade-in-up delay-300 flex flex-col sm:flex-row items-center justify-center gap-4 mt-4">
+
+          {/* Primary Button: Native Tailwind dengan efek Scale */}
+          <button
             onClick={onStart}
-            className="cursor-pointer"
+            className="group flex items-center gap-2.5 bg-zinc-950 dark:bg-white text-white dark:text-black font-urbanist font-bold text-sm px-8 py-4 rounded-full hover:scale-105 active:scale-95 transition-all duration-300 shadow-md hover:shadow-lg"
           >
-            <span className="group flex items-center gap-2 bg-zinc-950 dark:bg-white text-white dark:text-black font-urbanist font-bold text-sm px-8 py-4 rounded-full transition-all duration-200">
-              Let&apos;s Start
-              <svg className="w-4 h-4 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </span>
-          </StarBorder>
-          <a
-            href="#about"
-            className="text-sm font-inter text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 px-4 py-4 transition-colors"
+            {/* Teks Dinamis Berdasarkan Status User */}
+            {isLoggedIn ? "Continue Practice" : "Start Practice"}
+          </button>
+
+          {/* Secondary Button: Ghost Style dengan Smooth Scroll */}
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              document.getElementById("about")?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
+            // Background default sudah di-set, ditambah efek membesar ala tombol primary
+            className="group flex items-center gap-2 text-sm font-inter font-medium text-zinc-950 dark:text-zinc-50 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 px-8 py-4 rounded-full hover:scale-105 active:scale-95 transition-all duration-300 shadow-sm"
           >
-            Learn more ↓
-          </a>
+            Learn more
+          </button>
+
         </div>
 
         {/* Stats */}
         <div className="animate-fade-in-up delay-400 flex flex-wrap justify-center gap-10 mt-10 pt-10 border-t border-zinc-200 dark:border-zinc-800/60 w-full">
           {[
             { v: "3", u: "Sections", l: "Listening · Structure · Reading" },
-            { v: "100%", u: "AI-Driven", l: "Questions, review & remediation" },
+            // Ubah bagian 100% menjadi format ini:
+            { v: 100, suffix: "%", isCountUp: true, u: "AI-Driven", l: "Questions, review & remediation" },
             { v: "Free", u: "Forever", l: "No credit card required" },
           ].map((s) => (
             <div key={s.l} className="flex flex-col items-center gap-0.5">
-              <span className="font-urbanist font-extrabold text-3xl text-zinc-950 dark:text-zinc-50">
-                {s.v}
+              <span className="font-urbanist font-extrabold text-3xl text-zinc-950 dark:text-zinc-50 flex items-baseline">
+
+                {/* Pengecekan: Jika isCountUp true, gunakan animasi */}
+                {s.isCountUp ? (
+                  <>
+                    <CountUp
+                      from={0}
+                      to={s.v as number}
+                      direction="up"
+                      duration={1.5} // Kecepatan animasi (1.5 detik)
+                      className="font-urbanist font-extrabold text-3xl"
+                    />
+                    {s.suffix}
+                  </>
+                ) : (
+                  s.v
+                )}
+
                 <span className="text-zinc-400 dark:text-zinc-500 text-lg ml-1">{s.u}</span>
               </span>
               <span className="text-xs text-zinc-400 dark:text-zinc-600 font-inter">{s.l}</span>
@@ -121,21 +165,26 @@ function About() {
           <h2 className="font-urbanist font-extrabold text-4xl md:text-5xl text-zinc-950 dark:text-zinc-50">
             The Problem.
             <br />
-            <span className="text-zinc-400 dark:text-zinc-500">The Solution.</span>
+            <BlurText text="The Solution." delay={50} animateBy="letters" direction="top" className="text-zinc-400 dark:text-zinc-500 inline-block" />
           </h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Problem card */}
           <div className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 flex flex-col gap-5">
-            <div className="w-10 h-10 rounded-2xl bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-lg">
-              ⚠
-            </div>
-            <div>
-              <h3 className="font-urbanist font-bold text-xl text-zinc-950 dark:text-zinc-50 mb-3">
+            {/* Header Card: Icon dan Judul Sejajar */}
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-2xl bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-lg shrink-0">
+                ⚠
+              </div>
+              <h3 className="font-urbanist font-bold text-xl text-zinc-950 dark:text-zinc-50">
                 Traditional prep is broken.
               </h3>
-              <p className="text-sm font-inter text-zinc-500 dark:text-zinc-500 leading-relaxed mb-3">
+            </div>
+
+            {/* Isi Konten */}
+            <div className="flex flex-col gap-3">
+              <p className="text-sm font-inter text-zinc-500 dark:text-zinc-400 leading-relaxed">
                 Final-year students scrambling to meet{" "}
                 <strong className="text-zinc-700 dark:text-zinc-300">graduation requirements</strong> and
                 job-seekers chasing{" "}
@@ -144,35 +193,50 @@ function About() {
                 schedule, and completely disconnected from how they actually
                 learn.
               </p>
-              <p className="text-sm font-inter text-zinc-500 dark:text-zinc-500 leading-relaxed">
-                You study for hours. You still can&apos;t pinpoint what&apos;s holding
-                your score back. Generic practice tests treat every mistake the
-                same — they don&apos;t adapt. You do.
+              <p className="text-sm font-inter text-zinc-500 dark:text-zinc-400 leading-relaxed mt-2">
+                You study for hours, yet still can&apos;t pinpoint{" "}
+                <strong className="text-zinc-800 dark:text-zinc-200 font-semibold">
+                  what&apos;s holding your score back
+                </strong>
+                . Generic practice tests treat every mistake the same —{" "}
+                <strong className="text-zinc-950 dark:text-zinc-50 font-bold">
+                  they don&apos;t adapt. You do.
+                </strong>
               </p>
             </div>
           </div>
 
           {/* Solution card */}
           <div className="bg-zinc-950 dark:bg-zinc-50 border border-zinc-800 dark:border-zinc-200 rounded-3xl p-8 flex flex-col gap-5">
-            <div className="w-10 h-10 rounded-2xl bg-zinc-800 dark:bg-zinc-200 flex items-center justify-center text-lg">
-              ✦
-            </div>
-            <div>
-              <h3 className="font-urbanist font-bold text-xl text-zinc-50 dark:text-zinc-950 mb-3">
-                Toeflia: 100% AI-driven.
+            {/* Header Card: Icon dan Judul Sejajar */}
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-2xl bg-zinc-800 dark:bg-zinc-200 flex items-center justify-center text-lg shrink-0 text-zinc-50 dark:text-zinc-950">
+                ✦
+              </div>
+              <h3 className="font-urbanist font-bold text-xl text-zinc-50 dark:text-zinc-950">
+                This is Toeflia.
               </h3>
-              <p className="text-sm font-inter text-zinc-400 dark:text-zinc-600 leading-relaxed mb-3">
-                Toeflia is a free, AI-powered TOEFL simulator built on
-                micro-learning principles. Every practice session is short,
-                focused, and timed proportionally to the real TOEFL ITP — so the
-                pressure is real.
+            </div>
+
+            {/* Isi Konten */}
+            <div className="flex flex-col gap-3">
+              <p className="text-sm font-inter text-zinc-400 dark:text-zinc-600 leading-relaxed">
+                Toeflia is a{" "}
+                <strong className="text-zinc-50 dark:text-zinc-950 font-semibold">
+                  free, AI-powered TOEFL simulator
+                </strong>{" "}
+                built on micro-learning principles. Every practice session is short,
+                focused, and timed proportionally to the real TOEFL ITP —{" "}
+                <strong className="text-zinc-50 dark:text-zinc-950 font-bold">
+                  so the pressure is real.
+                </strong>
               </p>
-              <ul className="flex flex-col gap-2">
+              <ul className="flex flex-col gap-2 mt-1">
                 {[
-                  "AI generates and curates every question",
-                  "Instant deep-dive explanations per answer",
-                  "Personalized Mistake Insights after every session",
-                  "AI Remedial: 10 targeted questions on your weak spots",
+                  "AI generates and curates every question — no recycled banks",
+                  "Instant, in-depth explanation for every answer — right or wrong",
+                  "Personalized Mistake Insights surfaced after every session",
+                  "AI Remedial: 10 laser-targeted questions on your exact weak spots",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2.5">
                     <span className="mt-0.5 w-4 h-4 rounded-full bg-zinc-800 dark:bg-zinc-300 flex items-center justify-center shrink-0">
@@ -198,7 +262,12 @@ function About() {
 const MODULES = [
   {
     id: "feat-listening",
-    icon: "🎧",
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 18v-6a9 9 0 0 1 18 0v6" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+      </svg>
+    ),
     label: "Listening Comprehension",
     q: 10,
     time: "7 min",
@@ -207,7 +276,11 @@ const MODULES = [
   },
   {
     id: "feat-structure",
-    icon: "⚡",
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
+      </svg>
+    ),
     label: "Structure & Written Expression",
     q: 10,
     time: "6 min 15 sec",
@@ -216,7 +289,12 @@ const MODULES = [
   },
   {
     id: "feat-reading",
-    icon: "📖",
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+      </svg>
+    ),
     label: "Reading Comprehension",
     q: 10,
     time: "11 min",
@@ -224,7 +302,6 @@ const MODULES = [
     tag: "Section 03",
   },
 ];
-
 function Features() {
   return (
     <section id="features" className="py-24 px-4 bg-zinc-50 dark:bg-zinc-900/30">
@@ -236,7 +313,7 @@ function Features() {
           <h2 className="font-urbanist font-extrabold text-4xl md:text-5xl text-zinc-950 dark:text-zinc-50">
             Real Pressure.
             <br />
-            <span className="text-zinc-400 dark:text-zinc-500">Precise Practice.</span>
+            <BlurText text="Precise Practice." delay={50} animateBy="letters" direction="top" className="text-zinc-400 dark:text-zinc-500 inline-block" />
           </h2>
           <p className="mt-4 max-w-xl mx-auto text-sm text-zinc-500 font-inter leading-relaxed">
             Each session uses time limits proportionally scaled from the actual
@@ -247,30 +324,37 @@ function Features() {
           </p>
         </div>
 
-        {/* Module cards row — SpotlightCard */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
           {MODULES.map((m) => (
-            <SpotlightCard
+            <div
               key={m.id}
-              spotlightColor="rgba(168, 85, 247, 0.15)"
-              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 flex flex-col gap-4 hover:border-zinc-300 dark:hover:border-zinc-600 transition-all duration-300 group"
+              // SpotlightCard dihapus, diganti div biasa dengan flex-col
+              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 flex flex-col hover:border-zinc-300 dark:hover:border-zinc-600 transition-all duration-300 group relative"
             >
-              <div className="relative z-10 flex flex-col gap-4">
-                <div className="flex items-start justify-between">
-                  <div className="w-11 h-11 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-xl group-hover:scale-110 transition-transform duration-300">
-                    {m.icon}
-                  </div>
-                  <span className="text-[10px] font-inter text-zinc-400 dark:text-zinc-600 uppercase tracking-widest pt-1">
-                    {m.tag}
-                  </span>
+              
+              {/* Top Row: Icon dan Label Sejajar */}
+              <div className="flex items-center gap-4 mb-3">
+                <div className="w-12 h-12 shrink-0 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-50 group-hover:scale-110 transition-all duration-300">
+                  {m.icon}
                 </div>
-                <div>
-                  <h3 className="font-urbanist font-bold text-base text-zinc-950 dark:text-zinc-50 mb-1 leading-tight">
-                    {m.label}
-                  </h3>
-                  <p className="text-xs text-zinc-500 font-inter leading-relaxed">{m.desc}</p>
-                </div>
-                <div className="flex items-center gap-3 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                <h3 className="font-urbanist font-bold text-base text-zinc-950 dark:text-zinc-50 leading-tight">
+                  {m.label}
+                </h3>
+              </div>
+
+              {/* Middle Row: Deskripsi */}
+              <p className="text-xs text-zinc-400 font-inter leading-relaxed mb-5">
+                {m.desc}
+              </p>
+
+              {/* Bottom Row: Tag (Section) sejajar dengan Q dan Time */}
+              {/* mt-auto memastikan baris ini selalu terdorong ke paling bawah card */}
+              <div className="flex items-center justify-between pt-4 border-t border-zinc-100 dark:border-zinc-800 mt-auto">
+                <span className="text-[10px] font-inter text-zinc-400 dark:text-zinc-600 uppercase tracking-widest font-semibold">
+                  {m.tag}
+                </span>
+                
+                <div className="flex items-center gap-2.5">
                   <span className="text-xs font-inter text-zinc-400 dark:text-zinc-600 font-medium">
                     {m.q} questions
                   </span>
@@ -280,7 +364,8 @@ function Features() {
                   </span>
                 </div>
               </div>
-            </SpotlightCard>
+
+            </div>
           ))}
         </div>
 
@@ -297,15 +382,8 @@ function Features() {
           />
           <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-8">
             <div className="flex-1">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-800 dark:bg-zinc-200 border border-zinc-700 dark:border-zinc-300 rounded-full mb-4">
-                <span className="text-white dark:text-zinc-950 text-xs">✦</span>
-                <span className="text-xs text-zinc-300 dark:text-zinc-600 font-inter">
-                  The Killer Feature
-                </span>
-              </div>
               <h3 className="font-urbanist font-extrabold text-2xl md:text-3xl text-zinc-50 dark:text-zinc-950 mb-3 leading-tight">
                 AI Remedial:
-                <br />
                 Target Your Exact Weakness.
               </h3>
               <p className="text-sm font-inter text-zinc-400 dark:text-zinc-600 leading-relaxed max-w-lg">
@@ -348,7 +426,7 @@ function Features() {
 const STEPS = [
   {
     n: "01",
-    title: 'Click "Let\'s Start"',
+    title: 'Click "Get Started"',
     desc: "Find the button in the top-right corner of the navbar, or right in the middle of the hero.",
   },
   {
@@ -358,7 +436,7 @@ const STEPS = [
   },
   {
     n: "03",
-    title: "Enter the Dashboard",
+    title: "Enter the Practice",
     desc: "Pick a section — Listening, Structure, or Reading — and begin a timed micro-session.",
   },
   {
@@ -379,7 +457,7 @@ function HowItWorks() {
           <h2 className="font-urbanist font-extrabold text-4xl md:text-5xl text-zinc-950 dark:text-zinc-50">
             Four Steps.
             <br />
-            <span className="text-zinc-400 dark:text-zinc-500">Zero Friction.</span>
+            <BlurText text="Zero Friction." delay={50} animateBy="letters" direction="top" className="text-zinc-400 dark:text-zinc-500 inline-block" />
           </h2>
         </div>
 
@@ -389,13 +467,19 @@ function HowItWorks() {
               key={s.n}
               className="group bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-7 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-300"
             >
-              <span className="block font-urbanist font-extrabold text-5xl text-zinc-200 dark:text-zinc-800 group-hover:text-zinc-300 dark:group-hover:text-zinc-700 transition-colors mb-4 leading-none">
-                {s.n}
-              </span>
-              <h3 className="font-urbanist font-bold text-lg text-zinc-950 dark:text-zinc-50 mb-2">
-                {s.title}
-              </h3>
-              <p className="text-sm text-zinc-500 font-inter leading-relaxed">{s.desc}</p>
+              {/* Pembungkus Flex untuk Angka dan Judul */}
+              <div className="flex items-center gap-4 mb-3">
+                <span className="font-urbanist font-extrabold text-4xl text-zinc-400 dark:text-zinc-600 group-hover:text-zinc-500 dark:group-hover:text-zinc-400 transition-colors leading-none shrink-0">
+                  {s.n}
+                </span>
+                <h3 className="font-urbanist font-bold text-xl text-zinc-950 dark:text-zinc-50 leading-tight">
+                  {s.title}
+                </h3>
+              </div>
+              
+              <p className="text-sm text-zinc-500 font-inter leading-relaxed">
+                {s.desc}
+              </p>
             </div>
           ))}
         </div>
@@ -405,7 +489,7 @@ function HowItWorks() {
 }
 
 /* ─────────────────────────── FOOTER ────────────────────────────────────── */
-function Footer({ onStart }: { onStart: () => void }) {
+function Footer({ onStart, isLoggedIn }: { onStart: () => void; isLoggedIn: boolean }) {
   return (
     <footer className="border-t border-zinc-200 dark:border-zinc-800/60 py-12 px-4">
       <div className="max-w-5xl mx-auto">
@@ -417,17 +501,13 @@ function Footer({ onStart }: { onStart: () => void }) {
           <p className="text-sm text-zinc-500 font-inter mb-6">
             Free forever. No sign-up required. AI-ready from day one.
           </p>
-          <StarBorder
-            color="#a855f7"
-            speed="5s"
-            thickness={2}
+          <button
             onClick={onStart}
-            className="cursor-pointer"
+            className="group inline-flex items-center gap-2 bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 font-urbanist font-bold text-sm px-7 py-3.5 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 hover:scale-105 transition-all duration-300"
           >
-            <span className="inline-flex items-center gap-2 bg-zinc-950 dark:bg-white text-white dark:text-black font-urbanist font-bold text-sm px-7 py-3.5 rounded-full transition-all duration-150">
-              Let&apos;s Start →
-            </span>
-          </StarBorder>
+            {/* Logika kondisional untuk teks tombol */}
+            {isLoggedIn ? "Continue Practice" : "Let's Start"} 
+          </button>
         </div>
 
         {/* Bottom row */}
@@ -453,35 +533,36 @@ function Footer({ onStart }: { onStart: () => void }) {
 /* ─────────────────────────── PAGE ──────────────────────────────────────── */
 function LandingContent() {
   const [modalOpen, setModalOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const router = useRouter();
 
-  const handleStart = useCallback(() => {
-    /*
-     * ONBOARDING GATE LOGIC:
-     *  - If a user profile already exists in localStorage (from a previous session),
-     *    skip the modal and navigate directly to the dashboard.
-     *  - If no profile is found, open the Onboarding Modal to collect Name + Status.
-     */
+  useEffect(() => {
     try {
       const stored = localStorage.getItem("toeflia_user_profile");
       if (stored) {
-        router.push("/dashboard");
-        return;
+        setIsLoggedIn(true);
       }
     } catch {
-      /* localStorage unavailable — fall through to modal */
+      // Abaikan jika error membaca localStorage
+    }
+  }, []);
+
+  const handleStart = useCallback(() => {
+    if (isLoggedIn) {
+      router.push("/dashboard");
+      return;
     }
     setModalOpen(true);
-  }, [router]);
+  }, [router, isLoggedIn]);
 
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-950 dark:text-zinc-50 transition-colors duration-300">
       <Navbar onStartLearning={handleStart} />
-      <Hero onStart={handleStart} />
+      <Hero onStart={handleStart} isLoggedIn={isLoggedIn} />
       <About />
       <Features />
       <HowItWorks />
-      <Footer onStart={handleStart} />
+      <Footer onStart={handleStart} isLoggedIn={isLoggedIn} />
       <OnboardingModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
     </div>
   );

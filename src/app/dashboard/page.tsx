@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useUser } from "@/context/UserContext";
 import ReactMarkdown from 'react-markdown';
+import DashboardSkeleton from "@/components/skeletons/DashboardSkeleton";
 
 /* ── Status label map ───────────────────────────────────────────────────── */
 const STATUS_LABEL: Record<string, string> = {
@@ -73,20 +74,20 @@ export default function DashboardPage() {
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     const now = new Date();
-    
+
     const d1 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const d2 = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     const diffDays = Math.round((d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24));
 
-    const timeOptions: Intl.DateTimeFormatOptions = { 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    const timeOptions: Intl.DateTimeFormatOptions = {
+      hour: '2-digit',
+      minute: '2-digit'
     };
     const timeStr = date.toLocaleTimeString("en-US", timeOptions);
 
     if (diffDays === 0) return `Today, ${timeStr}`;
     if (diffDays === 1) return `Yesterday, ${timeStr}`;
- 
+
     return date.toLocaleDateString("en-US", {
       weekday: 'long',
       month: 'short',
@@ -95,18 +96,7 @@ export default function DashboardPage() {
   };
 
   if (!mounted || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div
-          className="w-8 h-8 rounded-full border-2 border-zinc-700"
-          style={{
-            borderTopColor: "#fafafa",
-            animation: "spin 0.8s linear infinite",
-          }}
-        />
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   const MODULE_ICONS: Record<string, React.ReactNode> = {
@@ -299,13 +289,25 @@ export default function DashboardPage() {
                   );
                 })
               ) : (
-                <div className="py-8 text-center">
-                  <p className="text-sm text-zinc-400 font-inter">No recent activity found.</p>
+                // EMPTY STATE: Tampilan jika BELUM ADA recent activity
+                <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                  {/* Ikon History/Activity yang minimalis */}
+                  <div className="w-12 h-12 rounded-full bg-zinc-50 dark:bg-zinc-800/50 flex items-center justify-center mb-4">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="text-zinc-400 dark:text-zinc-500">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                  </div>
+                  <h4 className="text-sm font-urbanist font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                    No history yet
+                  </h4>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 font-inter max-w-[200px] leading-relaxed">
+                    Your completed practice sessions will appear here for easy review.
+                  </p>
                 </div>
               )}
             </div>
           </div>
-         {/* AI Review teaser (Clean & Minimalist Edition) */}
+          {/* AI Review teaser (Clean & Minimalist Edition) */}
           <div className="relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 overflow-hidden flex flex-col h-full">
             <div
               className="absolute inset-0 opacity-[0.04] dark:opacity-[0.03]"
@@ -316,7 +318,7 @@ export default function DashboardPage() {
             />
 
             <div className="relative z-10 flex flex-col h-full">
-              
+
               {/* Header Card */}
               <div className="flex items-center gap-2 mb-6">
                 <div className="w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-900 dark:text-zinc-100">
@@ -338,10 +340,10 @@ export default function DashboardPage() {
                   <>
                     {hasActivity && latestSession?.aiSummary ? (
                       <div className="flex flex-col flex-1">
-                        
+
                         {/* Sub-header Context */}
                         <div className="mb-2">
-                          
+
                           <div className="flex items-baseline gap-2">
                             <h3 className="font-bold text-lg text-zinc-900 dark:text-zinc-50 tracking-tight">
                               {latestSession.module}
@@ -357,10 +359,10 @@ export default function DashboardPage() {
                           {/* Garis indikator di sebelah kiri */}
                           <div className="absolute left-0 top-1 bottom-1 w-[3px] bg-zinc-200 dark:bg-zinc-700 rounded-full" />
                           <div className="pl-4 text-sm font-inter text-zinc-600 dark:text-zinc-400 leading-relaxed line-clamp-5">
-                            <ReactMarkdown 
+                            <ReactMarkdown
                               components={{
-                                p: ({node, ...props}) => <span {...props} />,
-                                strong: ({node, ...props}) => <strong className="font-semibold text-zinc-900 dark:text-zinc-200" {...props} />
+                                p: ({ node, ...props }) => <span {...props} />,
+                                strong: ({ node, ...props }) => <strong className="font-semibold text-zinc-900 dark:text-zinc-200" {...props} />
                               }}
                             >
                               {latestSession.aiSummary}
@@ -380,11 +382,11 @@ export default function DashboardPage() {
                                 </div>
                                 {/* PERBAIKAN: Bungkus tip dengan ReactMarkdown agar bold/italic berfungsi */}
                                 <div className="text-xs text-zinc-500 dark:text-zinc-400 font-inter leading-relaxed line-clamp-2">
-                                  <ReactMarkdown 
+                                  <ReactMarkdown
                                     components={{
-                                      p: ({node, ...props}) => <span {...props} />,
-                                      strong: ({node, ...props}) => <strong className="font-bold text-zinc-700 dark:text-zinc-200" {...props} />,
-                                      em: ({node, ...props}) => <em className="italic text-zinc-600 dark:text-zinc-300" {...props} />
+                                      p: ({ node, ...props }) => <span {...props} />,
+                                      strong: ({ node, ...props }) => <strong className="font-bold text-zinc-700 dark:text-zinc-200" {...props} />,
+                                      em: ({ node, ...props }) => <em className="italic text-zinc-600 dark:text-zinc-300" {...props} />
                                     }}
                                   >
                                     {tip}
@@ -402,27 +404,44 @@ export default function DashboardPage() {
                             className="w-full flex items-center justify-center gap-2 bg-zinc-900 dark:bg-white text-white dark:text-black font-urbanist font-bold text-sm py-3.5 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-100 active:scale-95 transition-all"
                           >
                             View Full Review
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-7-7 7 7-7 7" />
-                            </svg>
                           </Link>
                         </div>
                       </div>
                     ) : (
                       // Tampilan Jika Belum Ada Tes Atau AI Masih Proses
                       <div className="flex flex-col flex-1">
-                        <p className="text-sm text-zinc-500 font-inter leading-relaxed mb-6">
-                          Complete at least one practice session to unlock your personalized AI Summary and Actionable Tips here.
+                        <p className="text-[13px] text-zinc-500 dark:text-zinc-400 font-inter leading-relaxed mb-5">
+                          Complete a practice session to unlock your AI-powered insights. Your personalized feedback will include:
                         </p>
-                        <div className="space-y-3">
-                          {["Granular Error Summary", "Targeted Improvement Tips", "Interactive AI Chat"].map((item) => (
-                            <div key={item} className="flex items-center gap-3">
-                              <div className="w-4 h-4 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0">
-                                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} className="text-zinc-500 dark:text-zinc-400">
+
+                        <div className="space-y-4">
+                          {[
+                            {
+                              title: "Evaluation Summary",
+                              desc: "Deep-dive analysis on your sentence structure, clauses, and grammar accuracy."
+                            },
+                            {
+                              title: "Actionable Tips",
+                              desc: "Step-by-step strategies to tackle tricky subject-verb agreements and modifiers."
+                            }
+                          ].map((item) => (
+                            <div key={item.title} className="flex items-start gap-3">
+                              {/* Ikon Checkmark */}
+                              <div className="mt-0.5 w-4 h-4 rounded-full bg-zinc-100 dark:bg-zinc-800/80 flex items-center justify-center shrink-0">
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} className="text-zinc-400 dark:text-zinc-500">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="m20 6-11 11-5-5" />
                                 </svg>
                               </div>
-                              <span className="text-xs text-zinc-500 dark:text-zinc-400 font-inter">{item}</span>
+
+                              {/* Teks Teaser */}
+                              <div className="flex flex-col">
+                                <span className="text-[13px] font-bold text-zinc-700 dark:text-zinc-300 font-urbanist leading-none">
+                                  {item.title}
+                                </span>
+                                <span className="text-xs text-zinc-500 dark:text-zinc-400 font-inter mt-1.5 leading-relaxed">
+                                  {item.desc}
+                                </span>
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -432,9 +451,6 @@ export default function DashboardPage() {
                             className="w-full flex items-center justify-center gap-2 bg-zinc-900 dark:bg-white text-white dark:text-black font-urbanist font-bold text-sm py-3.5 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-100 active:scale-95 transition-all"
                           >
                             Start Practice First
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m7-7H5" />
-                            </svg>
                           </Link>
                         </div>
                       </div>
@@ -443,7 +459,7 @@ export default function DashboardPage() {
                 );
               })()}
             </div>
-          </div> 
+          </div>
         </div>
       </div>
     </>

@@ -10,8 +10,6 @@ import { UserProvider } from "@/context/UserContext";
 import Logo from "@/components/ui/Logo";
 
 import ShinyText from "../components/reactbits/ShinyText";
-import StarBorder from "../components/reactbits/StarBorder";
-import SpotlightCard from "../components/reactbits/SpotlightCard";
 import CountUp from "../components/reactbits/CountUp";
 import BlurText from "../components/reactbits/BlurText";
 

@@ -117,8 +117,8 @@ export default function PracticePage() {
                 </div>
               </div>
 
-              <div className="flex items-center text-sm font-urbanist font-bold text-zinc-900 dark:text-zinc-50 group-hover:underline decoration-zinc-300 dark:decoration-zinc-600 underline-offset-4">
-                Select Module →
+             <div className="w-full mt-auto flex items-center justify-center py-3 rounded-2xl bg-zinc-100 dark:bg-zinc-800/50 text-sm font-urbanist font-bold text-zinc-500 dark:text-zinc-400 group-hover:bg-zinc-950 group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-zinc-950 transition-all duration-300">
+                Select Module
               </div>
             </button>
           ))}

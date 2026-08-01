@@ -15,7 +15,7 @@
 [![Gemini AI](https://img.shields.io/badge/Gemini_AI-Google-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 
-[Live Demo](#) · [Report a Bug](https://github.com/ibnu-faiz/Toeflia/issues) · [Request Feature](https://github.com/ibnu-faiz/Toeflia/issues)
+[Live Demo](#) · [Report a Bug](https://github.com/ibnujaisf/Toeflia/issues) · [Request Feature](https://github.com/ibnujaisf/Toeflia/issues)
 
 </div>
 
@@ -201,7 +201,7 @@ d:\Toeflia\
 **1. Clone the repository**
 
 ```bash
-git clone https://github.com/ibnu-faiz/Toeflia.git
+git clone https://github.com/ibnujaisf/Toeflia.git
 cd Toeflia
 ```
 
@@ -315,6 +315,6 @@ Distributed under the MIT License. See `LICENSE` for more information.
 <div align="center">
   <p>Built with ☕ and AI by <strong>Ibnu Faiz</strong></p>
   <p>
-    <a href="https://github.com/ibnu-faiz">GitHub</a>
+    <a href="https://github.com/ibnujaisf">GitHub</a>
   </p>
 </div>

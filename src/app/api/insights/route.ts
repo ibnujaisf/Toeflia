@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     const moduleCounts: Record<string, number> = {};
 
     // 2. Beri nomor Attempt per modul ke semua sesi
-    const sessionsWithAttempt = allSessions.map((session) => {
+    const sessionsWithAttempt = allSessions.map((session: any) => {
       moduleCounts[session.moduleId] = (moduleCounts[session.moduleId] || 0) + 1;
       return {
         ...session,

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useUser } from "@/context/UserContext";
 import ReactMarkdown from "react-markdown";
+import { InsightsSkeleton, InsightsSkeletonCard } from "@/components/skeletons/InsightsSkeleton";
 
 export default function InsightsPage() {
   const { user, isOnboarded } = useUser();
@@ -47,21 +48,21 @@ export default function InsightsPage() {
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     const now = new Date();
-    
+
     const d1 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const d2 = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     const diffDays = Math.round((d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24));
 
-    const timeOptions: Intl.DateTimeFormatOptions = { 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    const timeOptions: Intl.DateTimeFormatOptions = {
+      hour: '2-digit',
+      minute: '2-digit'
     };
     const timeStr = date.toLocaleTimeString("en-US", timeOptions);
 
     if (diffDays === 0) return `Today, ${timeStr}`;
     if (diffDays === 1) return `Yesterday, ${timeStr}`;
-   
-    
+
+
     return date.toLocaleDateString("en-US", {
       weekday: 'long',
       month: 'short',
@@ -71,7 +72,7 @@ export default function InsightsPage() {
     });
   };
 
-  if (!mounted || !user) return null;
+  if (!mounted || !user) return <InsightsSkeleton />;
 
   return (
     <div className="px-6 md:px-10 py-8 max-w-5xl">
@@ -84,22 +85,18 @@ export default function InsightsPage() {
           AI Insights & Patterns
         </h1>
         <p className="text-sm text-zinc-500 font-inter max-w-2xl leading-relaxed">
-          Explore the collection of all your personalized AI evaluations. 
+          Explore the collection of all your personalized AI evaluations.
           Identify recurring grammar patterns and strategic weaknesses across your practice sessions.
         </p>
       </div>
 
       {isLoading ? (
-        <div className="flex flex-col gap-6">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-48 bg-zinc-100 dark:bg-zinc-800/50 animate-pulse rounded-[32px]" />
-          ))}
-        </div>
+        <InsightsSkeletonCard />
       ) : sessions.length > 0 ? (
         <div className="flex flex-col gap-8">
           {sessions.map((session, index) => (
-            <div 
-              key={session.id} 
+            <div
+              key={session.id}
               className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[32px] p-6 md:p-8 transition-all hover:border-zinc-300 dark:hover:border-zinc-700 shadow-sm animate-fade-in-up"
               style={{ animationDelay: `${index * 100}ms` }}
             >
@@ -111,31 +108,40 @@ export default function InsightsPage() {
                       {session.moduleTitle}
                     </h2>
                     {/* Badge Test Attempt (Monochrome) */}
-                    <span className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 px-2 py-0.5 rounded font-urbanist font-bold uppercase tracking-wider text-[10px]">
+                    <span className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 dark:border-zinc-700 px-2 py-0.5 rounded font-urbanist font-bold uppercase tracking-wider text-[10px]">
                       Attempt {session.attemptNumber || "?"}
                     </span>
                   </div>
-                  
-                  <div className="flex items-center gap-3">
-                    {/* Score Badge */}
-                    <span className="bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded-md text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                      Score: {session.score}/{session.totalQuestions}
+
+                  <div className="flex items-center gap-2.5">
+
+                    {/* Score — Murni teks tebal tanpa background */}
+                    <span className="text-xs font-inter text-zinc-500 dark:text-zinc-400 font-medium">
+                      Score: {" "}
+                      <span className="font-urbanist font-bold text-[13px] text-zinc-950 dark:text-zinc-50">
+                        {session.score}
+                      </span>
+                      /{session.totalQuestions}
                     </span>
-                    <span className="text-zinc-300 dark:text-zinc-700">•</span>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 font-inter">
+
+                    {/* Titik Pemisah */}
+                    <span className="text-zinc-300 dark:text-zinc-700 text-[10px]">
+                      •
+                    </span>
+
+                    {/* Tanggal */}
+                    <p className="text-xs font-inter text-zinc-500 dark:text-zinc-400 font-medium">
                       {formatDate(session.createdAt)}
                     </p>
+
                   </div>
                 </div>
 
-                <Link 
+                <Link
                   href={`/dashboard/review/${session.id}`}
                   className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800/50 dark:hover:bg-zinc-800 text-xs font-urbanist font-bold text-zinc-600 dark:text-zinc-300 transition-colors border border-zinc-200 dark:border-zinc-700"
                 >
                   Review Details
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                  </svg>
                 </Link>
               </div>
 
@@ -170,7 +176,7 @@ export default function InsightsPage() {
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {session.tips.map((tip: string, index: number) => (
-                      <div 
+                      <div
                         key={index}
                         className="bg-zinc-50/50 dark:bg-zinc-950/30 border border-zinc-100 dark:border-zinc-800/50 p-3.5 rounded-2xl flex items-start gap-3 group hover:border-zinc-200 dark:hover:border-zinc-700 transition-colors"
                       >
@@ -213,8 +219,8 @@ export default function InsightsPage() {
           <p className="text-zinc-500 font-inter text-sm max-w-sm mb-8">
             Complete your first practice test to let our AI analyze your performance and provide personalized tips.
           </p>
-          <Link 
-            href="/dashboard/practice" 
+          <Link
+            href="/dashboard/practice"
             className="px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-full font-urbanist font-bold text-sm shadow-md hover:shadow-lg active:scale-95 transition-all"
           >
             Take a Practice Test

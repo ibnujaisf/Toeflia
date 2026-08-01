@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import ReviewList from "@/components/features/ReviewList";
+import ReviewSkeleton from "@/components/skeletons/ReviewSkeleton";
 import { useUser } from "@/context/UserContext";
 
 export default function ReviewDashboard() {
@@ -34,18 +35,7 @@ export default function ReviewDashboard() {
   }, [user]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div
-          className="w-8 h-8 rounded-full border-2 border-zinc-700"
-          style={{
-            borderTopColor: "#fafafa",
-            animation: "spin 0.8s linear infinite",
-          }}
-        />
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      </div>
-    );
+    return <ReviewSkeleton />;
   }
 
   return <ReviewList initialSessions={sessions} />;
